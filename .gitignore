@@ -1,0 +1,10 @@
+data_in/*
+data_out/*
+*_img/*
+*.csv
+*.jpg
+*.jpeg
+*.png
+*.pyc
+*.pkl
+.ipynb_checkpoints/
