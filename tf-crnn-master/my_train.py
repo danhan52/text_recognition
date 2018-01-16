@@ -28,15 +28,15 @@ from src.config import Params, Alphabet, import_params_from_json
 # parser.add_argument('-p', '--params-file', type=str, help='Parameters filename', default=None)
 # args = vars(parser.parse_args())
 
-csv_files_train = "./data/train.csv"
-csv_files_eval = "./data/valid.csv"
-output_model_dir = "./estimator"
+csv_files_train = "/home/danny/Repos/text_recognition/tf-crnn-master/data/train.csv"
+csv_files_eval = "/home/danny/Repos/text_recognition/tf-crnn-master//data/valid.csv"
+output_model_dir = "/home/danny/Repos/text_recognition/tf-crnn-master/estimator"
 n_epochs = 30
 gpu = "0"
 
 
-parameters = Params(train_batch_size=128,
-                    eval_batch_size=128,
+parameters = Params(train_batch_size=64,
+                    eval_batch_size=64,
                     learning_rate=1e-3,  # 1e-3 recommended
                     learning_decay_rate=0.95,
                     learning_decay_steps=5000,
@@ -47,7 +47,7 @@ parameters = Params(train_batch_size=128,
                     digits_only=False,
                     alphabet=Alphabet.MY_ALPHABET,
                     alphabet_decoding='same',
-                    csv_delimiter=';',
+                    csv_delimiter='\t',
                     csv_files_eval=csv_files_eval,
                     csv_files_train=csv_files_train,
                     output_model_dir=output_model_dir,
