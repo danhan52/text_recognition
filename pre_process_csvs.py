@@ -9,9 +9,9 @@ import warnings
 import numpy as np
 
 local_path = os.getcwd()
-img_dir = "data/Images_mod/"
-trans_dir = "data/Transcriptions/"
-part_dir = "data/Partitions/"
+img_dir = "/data/Images_mod/"
+trans_dir = "./data/Transcriptions/"
+part_dir = "./data/Partitions/"
 
 filenames = [f.replace(".txt", "") for f in os.listdir(trans_dir)]
 
