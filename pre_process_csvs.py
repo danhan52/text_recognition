@@ -7,9 +7,9 @@
 import os
 import warnings
 import numpy as np
-from skimage import io as skimio
-from skimage import color as skimcolor
-import skimage.transform as skimtrans
+
+
+
 
 local_path = os.getcwd()
 img_dir = "data/Images_mod/"
