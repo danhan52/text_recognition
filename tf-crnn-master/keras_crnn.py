@@ -193,12 +193,6 @@ for i in range(tr_len):
     tr_label_len[i] = len(label)
 
 
-# In[6]:
-
-import pickle
-pickle.dump([tr_imgs, tr_len, max_string_length, tr_labs, tr_label_len], open("data/train.pkl", "wb"))
-
-
 # In[7]:
 
 # import validation data
