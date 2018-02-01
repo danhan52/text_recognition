@@ -9,7 +9,6 @@ try:
     import better_exceptions
 except ImportError:
     pass
-from tqdm import trange
 import tensorflow as tf
 from src.model import crnn_fn
 from src.data_handler import data_loader
@@ -34,19 +33,19 @@ if __name__ == '__main__':
         dict_params = import_params_from_json(json_filename=args.get('params_file'))
         parameters = Params(**dict_params)
     else:
-        parameters = Params(train_batch_size=128,
-                            eval_batch_size=128,
+        parameters = Params(train_batch_size=64,
+                            eval_batch_size=64,
                             learning_rate=1e-3,  # 1e-3 recommended
                             learning_decay_rate=0.95,
                             learning_decay_steps=5000,
                             evaluate_every_epoch=5,
                             save_interval=5e3,
-                            input_shape=(32, 304),
+                            input_shape=(117, 1669),
                             optimizer='adam',
                             digits_only=False,
-                            alphabet=Alphabet.LETTERS_DIGITS_EXTENDED,
+                            alphabet=Alphabet.MY_ALPHABET,
                             alphabet_decoding='same',
-                            csv_delimiter=';',
+                            csv_delimiter='\t',
                             csv_files_eval=args.get('csv_files_eval'),
                             csv_files_train=args.get('csv_files_train'),
                             output_model_dir=args.get('output_model_dir'),
@@ -88,7 +87,7 @@ if __name__ == '__main__':
             n_samples += len(list(reader))
 
     try:
-        for e in trange(0, parameters.n_epochs, parameters.evaluate_every_epoch):
+        for e in range(0, parameters.n_epochs, parameters.evaluate_every_epoch):
             estimator.train(input_fn=data_loader(csv_filename=parameters.csv_files_train,
                                                  params=parameters,
                                                  batch_size=parameters.train_batch_size,
