@@ -12,7 +12,7 @@ class CONST:
 
 
 class Alphabet:
-    MY_ALPHABET = " !\"#&'()*+,-./0123456789:;<=>?ABCDEFGHIJKLMNOPQRSTUVWXY[]_abcdefghijklmnopqrstuvwxyz|"
+    MY_ALPHABET = " !\"#&'()*+,-./0123456789:;<=>?ABCDEFGHIJKLMNOPQRSTUVWXY[]_abcdefghijklmnopqrstuvwxyz|~"
     LettersLowercase = 'abcdefghijklmnopqrstuvwxyz'  # 26
     LettersCapitals = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'  # 26
     Digits = '0123456789'  # 10
