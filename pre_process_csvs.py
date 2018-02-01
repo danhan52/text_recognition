@@ -8,6 +8,13 @@ import os
 import warnings
 import numpy as np
 
+
+
+
+
+
+
+
 local_path = os.getcwd()
 img_dir = "/data/Images_mod/"
 trans_dir = "./data/Transcriptions/"
