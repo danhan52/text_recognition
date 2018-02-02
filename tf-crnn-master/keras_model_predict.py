@@ -188,6 +188,8 @@ with open(csv_files_train) as f:
     readr = csv.reader(f, delimiter="\t")
     train = [row for row in readr]
 
+train = train[:1000]
+
 tr_imgs = np.array([skimio.imread(r[0]) for r in train])
 tr_imgs = np.expand_dims(tr_imgs, 3)
 tr_len = len(tr_imgs)
@@ -327,8 +329,8 @@ model.compile(loss={'ctc': lambda y_true, y_pred: y_pred}, optimizer=optimizer)
 
 
 
-shp2 = np.ones(shape=(len(val_imgs), 1)) * 400 #val_imgs.shape[2]
-preds = model.predict(x = [val_imgs, val_labs, shp2, val_label_len], verbose=1)
+shp2 = np.ones(shape=(len(tr_imgs), 1)) * 400 #val_imgs.shape[2]
+preds = model.predict(x = [tr_imgs, tr_labs, shp2, tr_label_len], verbose=1)
 pickle.dump(preds, open("preds.pkl", "wb"))
 # In[ ]:
 
