@@ -38,7 +38,7 @@ if __name__ == '__main__':
                             learning_rate=1e-3,  # 1e-3 recommended
                             learning_decay_rate=0.95,
                             learning_decay_steps=5000,
-                            evaluate_every_epoch=5,
+                            evaluate_every_epoch=1,
                             save_interval=5e3,
                             input_shape=(117, 1669),
                             optimizer='adam',
