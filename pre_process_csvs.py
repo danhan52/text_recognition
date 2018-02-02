@@ -9,12 +9,6 @@ import warnings
 import numpy as np
 
 
-
-
-
-
-
-
 local_path = os.getcwd()
 img_dir = "/data/Images_mod/"
 trans_dir = "./data/Transcriptions/"
@@ -68,6 +62,8 @@ with open("data/train.csv", "w") as f_tr, open("data/valid.csv", "w") as f_va, o
         elif fn in test:
             f_te.write("{0}\t\"{1}\"\n".format(new_fn, trans))
 
+        if count > 1000:
+            break
         count += 1
         if count % 1000 == 0:
             print(count, end="\t")
