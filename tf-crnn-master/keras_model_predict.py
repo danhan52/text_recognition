@@ -205,22 +205,6 @@ for i in range(tr_len):
 
 # In[7]:
 
-# import validation data
-with open(csv_files_eval) as f:
-    readr = csv.reader(f, delimiter="\t")
-    valid = [row for row in readr]
-
-val_imgs = np.array([skimio.imread(r[0]) for r in valid])
-val_imgs = np.expand_dims(val_imgs, 3)
-val_len = len(val_imgs)
-
-# max_string_length = max([len(r[1]) for r in valid])
-val_labs = np.ones((val_len, max_string_length)) * 86
-val_label_len = np.zeros((val_len, 1))
-for i in range(val_len):
-    label = np.array(text_to_int_sequence(valid[i][1])) 
-    val_labs[i, :len(label)] = label
-    val_label_len[i] = len(label)
 
 
 # In[3]:
