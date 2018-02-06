@@ -88,12 +88,12 @@ if __name__ == '__main__':
 
     try:
         for e in range(0, parameters.n_epochs, parameters.evaluate_every_epoch):
-            estimator.train(input_fn=data_loader(csv_filename=parameters.csv_files_train,
-                                                 params=parameters,
-                                                 batch_size=parameters.train_batch_size,
-                                                 num_epochs=parameters.evaluate_every_epoch,
-                                                 data_augmentation=True,
-                                                 image_summaries=True))
+            # estimator.train(input_fn=data_loader(csv_filename=parameters.csv_files_train,
+            #                                      params=parameters,
+            #                                      batch_size=parameters.train_batch_size,
+            #                                      num_epochs=parameters.evaluate_every_epoch,
+            #                                      data_augmentation=True,
+            #                                      image_summaries=True))
             estimator.evaluate(input_fn=data_loader(csv_filename=parameters.csv_files_eval,
                                                     params=parameters,
                                                     batch_size=parameters.eval_batch_size,
