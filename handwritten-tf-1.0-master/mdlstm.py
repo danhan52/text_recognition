@@ -19,7 +19,7 @@ def ln(tensor, scope = None, epsilon = 1e-5):
 
     return LN_initial * scale + shift
 
-from tensorflow.contrib.rnn.python.ops.rnn_cell import _linear
+from tensorflow.contrib.rnn.python.ops.rnn_cell import _Linear
 
 class MultiDimentionalLSTMCell(tf.contrib.rnn.RNNCell):
     """
@@ -49,7 +49,7 @@ class MultiDimentionalLSTMCell(tf.contrib.rnn.RNNCell):
             c1,c2,h1,h2 = state
 
             # change bias argument to False since LN will add bias via shift
-            concat = _linear([inputs, h1, h2], 5 * self._num_units, False)
+            concat = _Linear([inputs, h1, h2], 5 * self._num_units, False)
 
             i, j, f1, f2, o = tf.split(concat, 5, 1)
 
