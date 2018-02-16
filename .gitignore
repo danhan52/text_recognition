@@ -3,4 +3,8 @@ data_out/*
 *_img/*
 *.pyc
 *.pkl
+*.csv
+*.png
+*.tar.gz
+*.tar.bz2
 .ipynb_checkpoints/
