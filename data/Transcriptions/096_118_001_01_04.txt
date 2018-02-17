@@ -1,1 +1,0 @@
--miter is equal to the Square of the ordinate
