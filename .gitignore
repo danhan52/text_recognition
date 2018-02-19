@@ -1,10 +1,10 @@
-data_in/*
-data_out/*
-*_img/*
+data/*
+data_raw/*
 *.pyc
 *.pkl
 *.csv
 *.png
+*.zip
 *.tar.gz
 *.tar.bz2
 .ipynb_checkpoints/

@@ -1,6 +1,13 @@
 import tensorflow as tf
-
 import tensorflow.contrib.slim as slim
+# from tensorflow.contrib.rnn.python.ops.core_rnn_cell_impl import _linear
+from tensorflow.contrib.rnn.python.ops.rnn_cell import _Linear
+# from tensorflow.python.ops.rnn_cell_impl import _linear
+
+def multi_dimensional_lstm(input_data, rnn_size):
+    rnn_out, _ = multiDimentionalRNN_whileLoop(rnn_size=rnn_size, input_data=input_data, sh=[1, 1])
+    return rnn_out
+
 
 def ln(tensor, scope = None, epsilon = 1e-5):
     """ Layer normalizes a 2D tensor along its second axis """
@@ -19,7 +26,6 @@ def ln(tensor, scope = None, epsilon = 1e-5):
 
     return LN_initial * scale + shift
 
-from tensorflow.contrib.rnn.python.ops.rnn_cell import _Linear
 
 class MultiDimentionalLSTMCell(tf.contrib.rnn.RNNCell):
     """
