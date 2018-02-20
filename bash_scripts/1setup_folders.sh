@@ -1,11 +1,11 @@
 # create data folders
-mkdir ../data
-mkdir ../data/bentham
-mkdir ../data/iam
-mkdir ../data/combined
+mkdir -p ../data_raw/iamHandwriting
+
+mkdir -p ../data/bentham
+mkdir -p ../data/iam
+mkdir -p ../data/combined
 
 # create modeling folders
-mkdir ../modeling/tf_output
-mkdir ../modeling/tf_output/estimator
-mkdir ../modeling/tf_output/graph
-mkdir ../modeling/tf_output/prediction
+mkdir -p ../modeling/tf_output/estimator
+mkdir -p ../modeling/tf_output/graph
+mkdir -p ../modeling/tf_output/prediction
