@@ -2,8 +2,6 @@ import numpy as np
 import pandas as pd
 import os
 
-
-
 def preprocess_iam_lines():
     #### Read in data
     data_list = []
@@ -38,7 +36,8 @@ def preprocess_iam_lines():
     data_df["prefix"] = [x.split("-")[0] for x in data_df["lineID"]]
     data_df["form"] = ["-".join([x.split("-")[0], x.split("-")[1]])
                                 for x in data_df["lineID"]]
-    local_path = os.getcwd().replace("\\", "/") + "/data/iamHandwriting/lines/"
+    local_path = os.getcwd().replace("\\", "/")
+    local_path = local_path.replace("preprocess", "") + "/data/iamHandwriting/lines/"
     data_df["path"] = local_path + data_df["prefix"] + "/" + data_df["form"] + "/" + data_df["lineID"] + ".png"
 
 
@@ -52,12 +51,9 @@ def preprocess_iam_lines():
     # get rid of the really big images
     data_df = data_df[np.logical_and(data_df.w_bound < w95, data_df.h_bound < h95)]
 
-    # get only words that are entirely lowercase letters
-    data_df["lower"] = [all([y.islower() for y in x]) 
-                         for x in data_df["transcription"]]
-
     #### Save all lines
-    data_df = data_df[["path", "transcription"]]
+    data_df["new_img_path"] = data_df["path"]
+    data_df = data_df[["new_img_path", "transcription"]]
     data_df.to_csv("../data/iamHandwriting/train.csv", sep="\t", index=False)
     print(str(len(data_df)) + " images in train.csv")
 
@@ -76,3 +72,6 @@ def preprocess_iam_lines():
     
     print()
     print("Letter freqencies:\n", letters)
+
+if __name__ == "__main__":
+    preprocess_iam_lines()

@@ -37,8 +37,8 @@ def preprocess_iam_words(lower=True):
     data_df["form"] = ["-".join([x.split("-")[0], x.split("-")[1]])
                                 for x in data_df["wordID"]]
     local_path = os.getcwd().replace("\\", "/")
-    local_path = local_path.replace("preprocess", "")
-    data_df["path"] = local_path + "data/iamHandwriting/words/" + data_df["prefix"] + "/" + data_df["form"] + "/" + data_df["wordID"] + ".png"
+    local_path = local_path.replace("preprocess", "") + "/data/iamHandwriting/words/"
+    data_df["path"] = local_path + data_df["prefix"] + "/" + data_df["form"] + "/" + data_df["wordID"] + ".png"
 
 
     #### Get rid of unwanted rows
@@ -59,12 +59,14 @@ def preprocess_iam_words(lower=True):
     # get only words that are entirely lowercase letters
     data_df["lower"] = [all([y.islower() for y in x]) 
                          for x in data_df["transcription"]]
-
-    data_df = data_df[data_df["lower"]]
+    
+    if lower:
+        data_df = data_df[data_df["lower"]]
 
 
     #### Save words
-    data_df = data_df[["path", "transcription"]]
+    data_df["new_img_path"] = data_df["path"]
+    data_df = data_df[["new_img_path", "transcription"]]
     data_df.to_csv("../data/iamHandwriting/train.csv", sep="\t", index=False)
     print(str(len(data_df)) + " images in train.csv")
 
@@ -82,3 +84,6 @@ def preprocess_iam_words(lower=True):
     
     print()
     print("Letter freqencies:\n", letters)
+
+if __name__ == "__main__":
+    preprocess_iam_words()
