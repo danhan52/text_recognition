@@ -1,6 +1,7 @@
 data/*
 data_raw/*
 modeling/tf_output/*
+old/*
 *.pyc
 *.pkl
 *.csv
