@@ -69,7 +69,7 @@ def preprocess_iam_lines():
             letters[l] += 1
     letters = sorted(letters.items(), key = lambda f: f[1], reverse=True)
     with open("../data/iamHandwriting/alphabet.txt", "w") as f:
-        f.write("".join([l[0] for l in letters]))
+        f.write("".join(sorted([l[0] for l in letters])))
     
     print()
     print("Letter freqencies:\n", letters)
@@ -153,7 +153,7 @@ def preprocess_iam_words(lower=True):
             letters[l] += 1
     letters = sorted(letters.items(), key = lambda f: f[1], reverse=True)
     with open("../data/iamHandwriting/alphabet.txt", "w") as f:
-        f.write("".join([l[0] for l in letters]))
+        f.write("".join(sorted([l[0] for l in letters])))
     
     print()
     print("Letter freqencies:\n", letters)

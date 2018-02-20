@@ -114,7 +114,7 @@ def preprocess_bentham():
             letters[l] += 1
     letters = sorted(letters.items(), key = lambda f: f[1], reverse=True)
     with open("../data/BenthamDataset/alphabet.txt", "w") as f:
-        f.write("".join([l[0] for l in letters]))
+        f.write("".join(sorted([l[0] for l in letters])))
 
     print("\n")
     print("Letter freqencies:\n", letters)
