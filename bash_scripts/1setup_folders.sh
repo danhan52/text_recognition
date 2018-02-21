@@ -1,9 +1,11 @@
 # create data folders
 mkdir -p ../data_raw/iamHandwriting
 
-mkdir -p ../data/bentham
-mkdir -p ../data/iam
+mkdir -p ../data/BenthamDataset
 mkdir -p ../data/combined
+mkdir -p ../data/iamHandwriting/ascii
+mkdir -p ../data/iamHandwriting/lines
+mkdir -p ../data/iamHandwriting/words
 
 # create modeling folders
 mkdir -p ../modeling/tf_output/estimator
