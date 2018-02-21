@@ -5,6 +5,6 @@ mv ../data_raw/benth_temp/BenthamDatasetR0-GT/* ../data/BenthamDataset
 rm -r ../data_raw/benth_temp
 
 echo "Unzipping IAM handwriting data..."
-tar -xzf ../data_raw/iamHandwriting/ascii.tgz -C ../data/iamHandwriting
-tar -xzf ../data_raw/iamHandwriting/words.tgz -C ../data/iamHandwriting
-tar -xzf ../data_raw/iamHandwriting/lines.tgz -C ../data/iamHandwriting
+tar -xzf ../data_raw/iamHandwriting/ascii.tgz -C ../data/iamHandwriting/ascii
+tar -xzf ../data_raw/iamHandwriting/words.tgz -C ../data/iamHandwriting/words
+tar -xzf ../data_raw/iamHandwriting/lines.tgz -C ../data/iamHandwriting/lines
