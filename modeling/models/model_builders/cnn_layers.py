@@ -12,7 +12,7 @@ def conv2d(input, W_size, b_size, strides=[1, 1, 1, 1], padding='SAME',
 
 # create a 7 layer deep CNN with (somewhat) alternating max_pool and
 # batch_normalization layers
-def deep_cnn(input_tensor, is_training):
+def deep_cnn(input_tensor, is_training, reshape=True):
 
     with tf.variable_scope('deep_cnn'):
         # conv1 - maxPool2x2
@@ -66,12 +66,15 @@ def deep_cnn(input_tensor, is_training):
             conv7 = tf.nn.relu(b_norm)
 
         # reshape output
-        with tf.variable_scope('Reshaping_cnn'):
-            shape = conv7.get_shape().as_list()  # [batch, height, width, features]
-            shape_tens = tf.shape(conv7)
-            transposed = tf.transpose(conv7, perm=[0, 2, 1, 3],
-                                      name='transposed')  # [batch, width, height, features]
-            conv_out = tf.reshape(transposed, [shape_tens[0], -1, shape[1] * shape[3]],
-                                       name='reshaped')  # [batch, width, height x features]
+        if reshape:
+            with tf.variable_scope('Reshaping_cnn'):
+                shape = conv7.get_shape().as_list()  # [batch, height, width, features]
+                shape_tens = tf.shape(conv7)
+                transposed = tf.transpose(conv7, perm=[0, 2, 1, 3],
+                                          name='transposed')  # [batch, width, height, features]
+                conv_out = tf.reshape(transposed, [shape_tens[0], -1, shape[1] * shape[3]],
+                                           name='reshaped')  # [batch, width, height x features]
+        else:
+            conv_out = conv7
 
     return conv_out
