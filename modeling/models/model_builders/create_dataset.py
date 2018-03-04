@@ -1,6 +1,6 @@
 import tensorflow as tf
 
-def create_iterator(csv_files_train, input_shape, batch_size):
+def create_iterator(csv_files_train, input_shape, batch_size, shuffle=True):
     with open(csv_files_train, "r") as f:
         f_lines = f.read().splitlines()[1:]
         filenames = [l.split("\t")[0] for l in f_lines]
@@ -20,7 +20,8 @@ def create_iterator(csv_files_train, input_shape, batch_size):
     
     dataset = tf.data.Dataset.from_tensor_slices((filenames, label_list))
     dataset = dataset.map(_parse_function)
-    dataset = dataset.shuffle(buffer_size=datasize)
+    if shuffle:
+        dataset = dataset.shuffle(buffer_size=datasize)
     dataset = dataset.batch(batch_size)
     iterator = dataset.make_initializable_iterator()
     next_batch = iterator.get_next()
