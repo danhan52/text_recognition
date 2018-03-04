@@ -9,7 +9,6 @@ then
 	gcloud compute scp ../data_raw/iamHandwriting/words.tgz $2:~/text_recognition/data_raw/iamHandwriting
 elif [ $1 = 'aws' ]
 then
-	echo "Not implemented, ignore next messages"
 	echo "Transferring Bentham to AWS..."
 	scp -i $3 ../data_raw/BenthamDatasetR0-GT.zip $2:~/text_recognition/data_raw
 	
