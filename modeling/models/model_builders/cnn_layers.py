@@ -65,16 +65,4 @@ def deep_cnn(input_tensor, is_training, reshape=True):
                                                    training=is_training, name='batch-norm')
             conv7 = tf.nn.relu(b_norm)
 
-        # reshape output
-        if reshape:
-            with tf.variable_scope('Reshaping_cnn'):
-                shape = conv7.get_shape().as_list()  # [batch, height, width, features]
-                shape_tens = tf.shape(conv7)
-                transposed = tf.transpose(conv7, perm=[0, 2, 1, 3],
-                                          name='transposed')  # [batch, width, height, features]
-                conv_out = tf.reshape(transposed, [shape_tens[0], -1, shape[1] * shape[3]],
-                                           name='reshaped')  # [batch, width, height x features]
-        else:
-            conv_out = conv7
-
-    return conv_out
+    return conv7

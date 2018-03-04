@@ -22,7 +22,7 @@ def get_words_from_chars(characters_list: List[str], sequence_lengths: List[int]
 
     return words
 
-def ctc_loss(predictions_dict, labels, input_shape, alphabet, alphabet_codes, batch_size, 
+def ctc_loss(prob, labels, input_shape, alphabet, alphabet_codes, batch_size, 
     n_pools=2*2, decode=True):
     # Compute seq_len from image width
     # 2x2 pooling in dimension W on layer 1 and 2 -> n-pools = 2*2
@@ -44,7 +44,7 @@ def ctc_loss(predictions_dict, labels, input_shape, alphabet, alphabet_codes, ba
         sparse_code_target = tf.SparseTensor(splited.indices, codes, splited.dense_shape)
 
     seq_lengths_labels = tf.bincount(tf.cast(sparse_code_target.indices[:, 0], tf.int32),
-                                     minlength=tf.shape(predictions_dict['prob'])[1])
+                                     minlength=tf.shape(prob)[1])
 
 
     # Use ctc loss on probabilities from lstm output
@@ -53,7 +53,7 @@ def ctc_loss(predictions_dict, labels, input_shape, alphabet, alphabet_codes, ba
     # >>> Cannot have longer labels than predictions -> error
     with tf.control_dependencies([tf.less_equal(sparse_code_target.dense_shape[1], tf.reduce_max(tf.cast(seq_len_inputs, tf.int64)))]):
         loss_ctc = tf.nn.ctc_loss(labels=sparse_code_target,
-                                  inputs=predictions_dict['prob'],
+                                  inputs=prob,
                                   sequence_length=tf.cast(seq_len_inputs, tf.int32),
                                   preprocess_collapse_repeated=False,
                                   ctc_merge_repeated=True,
@@ -69,23 +69,23 @@ def ctc_loss(predictions_dict, labels, input_shape, alphabet, alphabet_codes, ba
 
             table_int2str = tf.contrib.lookup.HashTable(tf.contrib.lookup.KeyValueTensorInitializer(keys, values), '?')
 
-            sparse_code_pred, log_probability = tf.nn.ctc_beam_search_decoder(predictions_dict['prob'],
+            sparse_code_pred, log_probability = tf.nn.ctc_beam_search_decoder(prob,
                                                                               sequence_length=tf.cast(seq_len_inputs, tf.int32),
                                                                               merge_repeated=False,
                                                                               beam_width=100,
                                                                               top_paths=2)
             # Score
-            predictions_dict['score'] = tf.subtract(log_probability[:, 0], log_probability[:, 1])
+            pred_score = tf.subtract(log_probability[:, 0], log_probability[:, 1])
 
             sparse_code_pred = sparse_code_pred[0]
 
             sequence_lengths_pred = tf.bincount(tf.cast(sparse_code_pred.indices[:, 0], tf.int32),
-                                                minlength=tf.shape(predictions_dict['prob'])[1])
+                                                minlength=tf.shape(prob)[1])
 
             pred_chars = table_int2str.lookup(sparse_code_pred)
-            predictions_dict['words'] = get_words_from_chars(pred_chars.values, sequence_lengths=sequence_lengths_pred)
+            words = get_words_from_chars(pred_chars.values, sequence_lengths=sequence_lengths_pred)
 
-            tf.summary.text('predicted_words', predictions_dict['words'][:10])
+            # tf.summary.text('predicted_words', words[:10])
 
         with tf.name_scope('evaluation'):
             CER = tf.metrics.mean(tf.edit_distance(sparse_code_pred, tf.cast(sparse_code_target, dtype=tf.int64)), name='CER')
@@ -94,16 +94,12 @@ def ctc_loss(predictions_dict, labels, input_shape, alphabet, alphabet_codes, ba
             # Convert label codes to decoding alphabet to compare predicted and groundtrouth words
             target_chars = table_int2str.lookup(tf.cast(sparse_code_target, tf.int64))
             target_words = get_words_from_chars(target_chars.values, seq_lengths_labels)
-            accuracy = tf.metrics.accuracy(target_words, predictions_dict['words'], name='accuracy')
+            accuracy = tf.metrics.accuracy(target_words, words, name='accuracy')
 
-            eval_metric_ops = {
-                               'eval/accuracy': accuracy,
-                               'eval/CER': CER,
-                               }
             CER = tf.Print(CER, [CER], message='-- CER : ')
             accuracy = tf.Print(accuracy, [accuracy], message='-- Accuracy : ')
     else:
         CER = None; accuracy = None
 
 
-    return loss_ctc, predictions_dict, CER, accuracy
+    return loss_ctc, words, pred_score, CER, accuracy
