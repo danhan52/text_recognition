@@ -55,7 +55,8 @@ def deep_crnn(input_tensor, labels, input_shape, alphabet, batch_size,
     out = ctc_loss(prob, labels, input_shape, alphabet, 
         alphabet_codes, batch_size)
     loss_ctc, words, pred_score, CER, accuracy = out
-
+    words = tf.convert_to_tensor(words)
+    
     # optimizer
     train_op = create_optimizer(loss_ctc)
 
