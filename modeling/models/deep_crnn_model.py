@@ -32,9 +32,7 @@ def get_predictions(lstm_net, n_classes, list_n_hidden):
     raw_pred = tf.argmax(tf.nn.softmax(lstm_out), axis=2, name='raw_prediction')
 
     # Swap batch and time axis
-    # lstm_out = tf.transpose(lstm_out, [1, 0, 2], name='transpose_time_major')  # [width(time), batch, n_classes]
     prob = tf.transpose(lstm_out, [1, 0, 2], name='transpose_time_major')  # [width(time), batch, n_classes]
-    # predictions_dict = {'prob': lstm_out, 'raw_predictions': raw_pred}
     
     return prob #predictions_dict
 
@@ -42,8 +40,6 @@ def get_predictions(lstm_net, n_classes, list_n_hidden):
 
 def deep_crnn(input_tensor, labels, input_shape, alphabet, batch_size, 
     optimizer="adam", is_training=True):
-    # input_tensor = tf.placeholder(tf.float32, [None, input_shape[0], input_shape[1], 1])
-    # labels = tf.placeholder(tf.string, [None])
 
     alphabet_codes = list(range(len(alphabet)))
     n_classes = len(alphabet)
@@ -53,13 +49,9 @@ def deep_crnn(input_tensor, labels, input_shape, alphabet, batch_size,
     cnn_out = reshape_cnn(cnn_out)
     n_hidden = [256, 256]
     lstm_out =  bidirectional_lstm(cnn_out, n_hidden)
-    # predictions_dict = get_predictions(lstm_out, n_classes, n_hidden)
     prob = get_predictions(lstm_out, n_classes, n_hidden)
 
     # loss layers
-    # out = ctc_loss(predictions_dict, labels, input_shape, alphabet, 
-    #     alphabet_codes, batch_size)
-    # loss_ctc, predictions_dict, CER, accuracy = out
     out = ctc_loss(prob, labels, input_shape, alphabet, 
         alphabet_codes, batch_size)
     loss_ctc, words, pred_score, CER, accuracy = out
@@ -67,5 +59,4 @@ def deep_crnn(input_tensor, labels, input_shape, alphabet, batch_size,
     # optimizer
     train_op = create_optimizer(loss_ctc)
 
-    # return train_op, loss_ctc, CER, accuracy, predictions_dict
     return train_op, loss_ctc, CER, accuracy, prob, words
