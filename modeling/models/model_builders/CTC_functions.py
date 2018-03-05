@@ -60,7 +60,7 @@ def ctc_loss(prob, labels, input_shape, alphabet, alphabet_codes, batch_size,
                                   ignore_longer_outputs_than_inputs=True,  # returns zero gradient in case it happens -> ema loss = NaN
                                   time_major=True)
         loss_ctc = tf.reduce_mean(loss_ctc)
-        loss_ctc = tf.Print(loss_ctc, [loss_ctc], message='* Loss : ')
+        # loss_ctc = tf.Print(loss_ctc, [loss_ctc], message='* Loss : ')
 
     if decode:
         with tf.name_scope('code2str_conversion'):
@@ -96,8 +96,8 @@ def ctc_loss(prob, labels, input_shape, alphabet, alphabet_codes, batch_size,
             target_words = get_words_from_chars(target_chars.values, seq_lengths_labels)
             accuracy = tf.metrics.accuracy(target_words, words, name='accuracy')
 
-            CER = tf.Print(CER, [CER], message='-- CER : ')
-            accuracy = tf.Print(accuracy, [accuracy], message='-- Accuracy : ')
+            # CER = tf.Print(CER, [CER], message='-- CER : ')
+            # accuracy = tf.Print(accuracy, [accuracy], message='-- Accuracy : ')
     else:
         CER = None; accuracy = None
 
