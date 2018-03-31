@@ -1,6 +1,6 @@
 import tensorflow as tf
 
-def create_optimizer(loss, optimizer="adam", learning_rate=1e-3, 
+def create_optimizer(loss, lastlayer=False, optimizer="adam", learning_rate=1e-3, 
     learning_decay_rate=0.95, learning_decay_steps=5000):
     # Create the learning rate as well as a moving average
     global_step = tf.train.get_or_create_global_step()
@@ -24,8 +24,12 @@ def create_optimizer(loss, optimizer="adam", learning_rate=1e-3,
     elif optimizer == 'rms':
         optimizer = tf.train.RMSPropOptimizer(learning_rate)
 
+    if lastlayer:
+        connected_vars = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES, "fully_connected")
+        opt_op = optimizer.minimize(loss, global_step=global_step, var_list=connected_vars)
+    else:
+        opt_op = optimizer.minimize(loss, global_step=global_step)
     update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
-    opt_op = optimizer.minimize(loss, global_step=global_step)
     with tf.control_dependencies(update_ops + [opt_op]):
         train_op = tf.group(maintain_averages_op)
 

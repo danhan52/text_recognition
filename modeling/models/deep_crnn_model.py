@@ -39,7 +39,7 @@ def get_predictions(lstm_net, n_classes, list_n_hidden):
 #######################################################################
 
 def deep_crnn(input_tensor, labels, input_shape, alphabet, batch_size, 
-    optimizer="adam", is_training=True):
+    optimizer="adam", is_training=True, lastlayer=False):
 
     alphabet_codes = list(range(len(alphabet)))
     n_classes = len(alphabet)
@@ -58,6 +58,6 @@ def deep_crnn(input_tensor, labels, input_shape, alphabet, batch_size,
     words = tf.convert_to_tensor(words)
     
     # optimizer
-    train_op = create_optimizer(loss_ctc)
+    train_op = create_optimizer(loss_ctc, lastlayer)
 
     return train_op, loss_ctc, CER, accuracy, prob, words

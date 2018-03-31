@@ -81,7 +81,17 @@ def preprocess_bentham():
     data_df["nonhex"] = [any([ord(i) > 127 for i in t]) 
                          for t in data_df.transcription]
     data_df = data_df[np.logical_not(data_df.nonhex)]
-
+    
+    # temporary ######################################################################################
+    if False:
+        al = " !\"#&'()*+,-./0123456789:;?ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
+        data_df["iam"] = [all([i in al for i in t]) for t in data_df.transcription]
+        print(len(data_df))
+        data_df = data_df[data_df.iam]
+        print(len(data_df))
+        import sys
+        sys.exit(0)
+    # temporary ######################################################################################
 
     #### Save new images
     new_img_dir = local_path + "/data/BenthamDataset/Images_mod/"
