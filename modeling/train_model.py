@@ -121,8 +121,8 @@ with tf.Session() as sess:
 
                 print('batch: {0}, loss: {3} \n\tCER: {1}, accuracy: {2}'.format(j, cer, acc, loss))
             except:
-                newdata = {"loss":-1, "cer":-1, "accuracy":[-1, -1], 
-                          "labels":[""], "words":[""]}
+                newdata = {"loss":-1, "cer":-1, "accuracy":[[-1, -1]], 
+                          "labels":[[""]], "words":[[""]]}
                 newdata = pd.DataFrame.from_dict(newdata)
                 data = data.append(newdata)
                 pickle.dump(data, open(output_model_dir+"/metrics" + str(i) + ".pkl", "wb"))
