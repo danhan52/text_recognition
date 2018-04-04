@@ -92,8 +92,9 @@ def preprocess_ASM_csv():
             y4 = y4[:-1]
             y4.insert(0, max(y4[0]-y4_ave, 0))
         else: # if there's only one line, guess based on my model's max height
-            y3 = [max(data_mini["y1"].iloc[0]-maxh, 0)]
-            y4 = [max(data_mini["y2"].iloc[0]-maxh, 0)]
+            ychoice = max(data_mini["y1"].iloc[0], data_mini["y2"].iloc[0])
+            y3 = [max(ychoice-maxh, 0)]
+            y4 = [max(ychoice-maxh, 0)]
 
         data_mini["y3"] = y3
         data_mini["y4"] = y4
