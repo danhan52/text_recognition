@@ -140,6 +140,19 @@ def preprocess_ASM_csv():
     data.sort_values("created_dt")
     pickle.dump(data, open("../data/ASM/newclas.pkl", "wb"))
     print("\nCreated {0} data entries and saved file".format(len(data)))
+    
+    # create file for length of data
+    with open("../data/ASM/data_size.txt", "w") as f:
+        f.write(str(len(data)))
+    # create img size
+    with open("../data/combined/img_size.txt", "r") as f1:
+        with open("../data/ASM/img_size.txt", "w") as f2:
+            f2.write(f1.readline())
+    # create alphabet
+    with open("../data/combined/alphabet.txt", "r") as f1:
+        with open("../data/ASM/alphabet.txt", "w") as f2:
+            f2.write(f1.readline())
+
 
 if __name__ == "__main__":
     preprocess_ASM_csv()

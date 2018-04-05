@@ -15,11 +15,19 @@ def readImg(url, grey=True):
     img = img.convert("L")
     return img
 
-def create_ASM_batch(batch_start=0, batch_end=100):
+def create_ASM_batch(batch_start=0, batch_end=100, data_loc="../../data"):
     # Read in all classifications
-    sv_fold = "../../data/ASM/"
+    sv_fold = data_loc + "/ASM/"
     if not os.path.isdir(sv_fold+"Images"):
         os.mkdir(sv_fold+"Images")
+    else:
+        for the_file in os.listdir(sv_fold+"Images"):
+            fpath = os.path.join(sv_fold+"Images", the_file)
+            try:
+                if os.path.isfile(fpath):
+                    os.unlink(fpath)
+            except:
+                pass
 
     full_sv = os.getcwd().replace("\\", "/")
     full_sv = full_sv.replace("/online_functions", "")
@@ -27,16 +35,16 @@ def create_ASM_batch(batch_start=0, batch_end=100):
     full_sv = full_sv + "/data/ASM/Images/"\
 
     print("Loading classification data")
-    if os.path.exists("../../data/ASM/newclas.pkl"):
-        data = pickle.load(open("../../data/ASM/newclas.pkl", "rb"))
-        print("\n{0} data entries loaded".format(len(data)))
+    if os.path.exists(data_loc + "/ASM/newclas.pkl"):
+        data = pickle.load(open(data_loc + "/ASM/newclas.pkl", "rb"))
+#        print("{0} data entries loaded".format(len(data)))
     else:
         print("File doesn't exist, run \"preprocess_ASM_csv.py\" first")
 
 
     # Preprocess by splitting image into sections
     # load input_shape from file output by preprocess
-    with open("../../data/combined/img_size.txt", "r") as f:
+    with open(data_loc + "/combined/img_size.txt", "r") as f:
         doc = f.readline()
         w, h = doc.split(",")
         maxh = int(float(h))
@@ -44,7 +52,9 @@ def create_ASM_batch(batch_start=0, batch_end=100):
     # loop to get data
     curdata = data.iloc[batch_start:batch_end]
     train_lines = []
+    img_files = []
     count = 0
+    count1 = 0
 
     print("Creating image files and training csv")
     for i in range(len(curdata)):
@@ -94,17 +104,22 @@ def create_ASM_batch(batch_start=0, batch_end=100):
             fn = "{0}{1}_{2}_{3}_{4}.png".format(full_sv, curclas["subject_id"], curclas["classification_id"], curclas["frame"], j)
             # save image
             img_line.save(fn)
+            img_files.append(fn)
             # add line for training
-            train_lines.append(fn + "\t" + trans + "\n")
+            train_lines.append(trans)
+            count1 += 1
 
         count += 1
         if count % ((batch_end-batch_start)/10) == 0: print(count, end="\t", flush=True)
     # end of loop
-    with open("../../data/ASM/train.csv", "w") as f:
-        for l in train_lines:
-            f.write(l)
-    print("Images and training file created")
+    savedata = pd.DataFrame.from_dict({"new_img_path":img_files, "transcription":train_lines})
+    savedata = savedata[np.logical_not(savedata.duplicated())]
+    savedata.to_csv(data_loc + "/ASM/train.csv", sep="\t", index=False)
+#    with open(data_loc + "/ASM/train.csv", "w") as f:
+#        for l in train_lines:
+#            f.write(l)
+    print("\nTraining file and {0} images created".format(len(savedata)))
 
-        
+
 if __name__ == "__main__":
     create_ASM_batch()
