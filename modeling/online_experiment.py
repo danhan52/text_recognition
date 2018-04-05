@@ -82,10 +82,6 @@ for b in range(0, data_size, bunch_size):
     out = deep_crnn(input_tensor, labels, input_shape, alphabet, batch_size, lastlayer=False)
     train_op, loss_ctc, CER, accuracy, prob, words = out
 
-    # ** Load dataset **
-    out = create_iterator(csv_file, input_shape, batch_size, False)
-    dataset, iterator, next_batch, datasize = out
-
 
     print("Starting training...")
     saver = tf.train.Saver()
@@ -102,7 +98,13 @@ for b in range(0, data_size, bunch_size):
 
         writer = tf.summary.FileWriter(output_graph_dir, sess.graph)
         n_batches = int(datasize / batch_size)
-        for i in range(n_epochs_per_bunch):
+        for i in range(n_epochs_per_bunch):            
+            # ** Load dataset **
+            if i > 0:
+                out = create_iterator(csv_file, input_shape, batch_size, True)
+            else:
+                out = create_iterator(csv_file, input_shape, batch_size, False)
+            dataset, iterator, next_batch, datasize = out
             print("---------------------------------------------------------")
             print("Starting epoch", i)
             for j in range(0, n_batches):
