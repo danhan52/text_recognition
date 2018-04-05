@@ -97,7 +97,6 @@ for b in range(0, data_size, bunch_size):
 
 
         writer = tf.summary.FileWriter(output_graph_dir, sess.graph)
-        n_batches = int(datasize / batch_size)
         for i in range(n_epochs_per_bunch):            
             # ** Load dataset **
             if i > 0:
@@ -105,6 +104,7 @@ for b in range(0, data_size, bunch_size):
             else:
                 out = create_iterator(csv_file, input_shape, batch_size, False)
             dataset, iterator, next_batch, datasize = out
+            n_batches = int(datasize / batch_size)
             print("---------------------------------------------------------")
             print("Starting epoch", i)
             for j in range(0, n_batches):
