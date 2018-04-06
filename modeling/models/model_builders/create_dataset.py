@@ -16,7 +16,7 @@ def create_iterator(csv_files_train, input_shape, batch_size, shuffle=True):
         image_resized = tf.image.resize_image_with_crop_or_pad(image_decoded,
                                                                input_shape[0],
                                                                input_shape[1])
-        return image_resized, label
+        return image_resized, label, filename
     
     dataset = tf.data.Dataset.from_tensor_slices((filenames, label_list))
     dataset = dataset.map(_parse_function)
