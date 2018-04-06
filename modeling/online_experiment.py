@@ -91,7 +91,7 @@ def remove_old_ckpt(b):
 # # Run model - looped
 
 restore_model_nm = input_model_nm
-data = pd.DataFrame(columns=["loss", "cer", "accuracy", "labels", "words", "pred", "bunch", "epoch", "batch"])
+data = pd.DataFrame(columns=["loss", "cer", "accuracy", "labels", "words", "filenames", "pred", "bunch", "epoch", "batch"])
 for b in range(0, data_size, bunch_size):
     # ** create this "bunch" of the dataset **
     create_ASM_batch(b, b+bunch_size-1, "../data")
@@ -104,8 +104,6 @@ for b in range(0, data_size, bunch_size):
 
     print("Starting training...")
     saver = tf.train.Saver()
-
-    data = pd.DataFrame(columns=["loss", "cer", "accuracy", "labels", "words", "filenames", "pred", "bunch", "epoch", "batch"])
 
     with tf.Session() as sess:
         start_time = time.time()
