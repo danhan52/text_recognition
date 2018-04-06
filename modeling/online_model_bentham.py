@@ -39,7 +39,7 @@ restore = False
 data_folder = "../data/" + dataset
 csv_file = data_folder + "/train.csv"
 output_model_dir = "./tf_output/estimator/"
-input_model_dir = "./tf_output/run_10/estimator/"
+input_model_dir = "./tf_output/input_model/"
 output_preds_dir = "./tf_output/prediction/"
 output_graph_dir = "./tf_output/graph/"
 
@@ -87,7 +87,7 @@ dataset, iterator, next_batch, datasize = out
 print("Starting training...")
 saver = tf.train.Saver()
 
-data = pd.DataFrame(columns=["loss", "cer", "accuracy", "labels", "words", "pred", "batch", "round"])
+data = pd.DataFrame(columns=["loss", "cer", "accuracy", "labels", "words", "filenames" "pred", "batch", "round"])
 
 with tf.Session() as sess:
     start_time = time.time()
@@ -101,63 +101,55 @@ with tf.Session() as sess:
     for i in range(n_epochs):
         print("---------------------------------------------------------")
         print("Starting epoch", i)
-        for j in range(0, n_batches, 50):
+        jump_by = 50
+        for j in range(0, n_batches, jump_by):
             sess.run(iterator.initializer)
             for k in range(j):
 
-                input_tensor_b, labels_b = sess.run(next_batch)
+                input_tensor_b, labels_b, filenames_b = sess.run(next_batch)
 
-
-                pred = "pred"
-                try:
-                    cer, acc, loss, wordz = sess.run([CER, accuracy, loss_ctc, words],
-                                 feed_dict={input_tensor: input_tensor_b, labels: labels_b})
-
-                    newdata = {"loss":loss, "cer":cer, "accuracy":[[acc]], 
-                              "labels":[[labels_b]], "words":[[wordz]], "pred":pred, "batch":k, "round":j//10}
+                if k > j-jump_by: # only predict on first run through
+                    # do prediction first
+                    pred = "pred"
+                    try:
+                        cer, acc, loss, wordz = sess.run([CER, accuracy, loss_ctc, words],
+                                     feed_dict={input_tensor: input_tensor_b, labels: labels_b})
+                        newdata = {"loss":loss, "cer":cer, "accuracy":[[acc]], 
+                                  "labels":[[labels_b]], "words":[[wordz]], "filenames":[[filenames_b]],
+                                   "pred":pred, "round":i, "batch":j}
+                        print('batch: {0}:{4}, loss: {3} \n\tCER: {1}, accuracy: {2}'.format(j, cer, acc, loss, k))
+                    except:
+                        newdata = {"loss":-1, "cer":-1, "accuracy":[[-1, -1]], 
+                                  "labels":[[""]], "words":[[""]], "filenames":[[""]],
+                                   "pred":pred, "round":i, "batch":j}
+                        print("Error at ", j, k)
+                    # save data
                     newdata = pd.DataFrame.from_dict(newdata)
                     data = data.append(newdata)
-                    pickle.dump(data, open(output_model_dir+"/online_metrics" + str(i) + ".pkl", "wb"))
-                    saver.save(sess, output_model_dir+"/online_model" + str(i) + ".ckpt")
+                    pickle.dump(data, open(output_model_dir+"online_metrics" + str(i) + ".pkl", "wb"))
+                    saver.save(sess, output_model_dir+"online_model" + str(i) + ".ckpt")
 
-                    print('batch: {0}:{4}, loss: {3} \n\tCER: {1}, accuracy: {2}'.format(k, cer, acc, loss, j))
-                except:
-                    newdata = {"loss":-1, "cer":-1, "accuracy":[[-1, -1]], 
-                              "labels":[[""]], "words":[[""]], "pred":pred, "batch":k, "round":j//10}
-                    newdata = pd.DataFrame.from_dict(newdata)
-                    data = data.append(newdata)
-                    pickle.dump(data, open(output_model_dir+"/online_metrics" + str(i) + ".pkl", "wb"))
-                    saver.save(sess, output_model_dir+"/online_model" + str(i) + ".ckpt")
-
-                    print("Error at ", k, j)
-
+                # train with new data
                 pred = "train"
                 try:
                     _, cer, acc, loss, wordz = sess.run([train_op, CER, accuracy, loss_ctc, words],
                                  feed_dict={input_tensor: input_tensor_b, labels: labels_b})
-
                     newdata = {"loss":loss, "cer":cer, "accuracy":[[acc]], 
-                              "labels":[[labels_b]], "words":[[wordz]], "pred":pred, "batch":k, "round":j//10}
-                    newdata = pd.DataFrame.from_dict(newdata)
-                    data = data.append(newdata)
-                    pickle.dump(data, open(output_model_dir+"/online_metrics" + str(i) + ".pkl", "wb"))
-                    saver.save(sess, output_model_dir+"/online_model" + str(i) + ".ckpt")
-
-                    print('batch: {0}:{4}, loss: {3} \n\tCER: {1}, accuracy: {2}'.format(k, cer, acc, loss, j))
+                              "labels":[[labels_b]], "words":[[wordz]], "filenames":[[filenames_b]],
+                                   "pred":pred, "round":i, "batch":j}
+                    print('batch: {0}:{4}, loss: {3} \n\tCER: {1}, accuracy: {2}'.format(j, cer, acc, loss, k))
                 except:
                     newdata = {"loss":-1, "cer":-1, "accuracy":[[-1, -1]], 
-                              "labels":[[""]], "words":[[""]], "pred":pred, "batch":k, "round":j//10}
-                    newdata = pd.DataFrame.from_dict(newdata)
-                    data = data.append(newdata)
-                    pickle.dump(data, open(output_model_dir+"/online_metrics" + str(i) + ".pkl", "wb"))
-                    saver.save(sess, output_model_dir+"/online_model" + str(i) + ".ckpt")
-
-                    print("Error at ", k, j)
-
-            with open(output_model_dir + "/tracker.txt", "a+") as f:
-                f.write(str(i) + "," + str(j) + "\n")
-#            if j > 1: break
-#        break
+                              "labels":[[""]], "words":[[""]], "filenames":[[""]],
+                                   "pred":pred, "round":i, "batch":j}
+                    print("Error at ", j, k)
+                    num_errors += 1
+                # save data
+                newdata = pd.DataFrame.from_dict(newdata)
+                data = data.append(newdata)
+                pickle.dump(data, open(output_model_dir+"online_metrics" + str(i) + ".pkl", "wb"))
+                saver.save(sess, output_model_dir+"online_model" + str(i) + ".ckpt")
+                
         print('Avg Epoch time: {0} seconds'.format((time.time() - start_time)/(1.0*(i+1))))
         
     print('Total time: {0} seconds'.format(time.time() - start_time))
