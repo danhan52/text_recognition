@@ -10,6 +10,7 @@ import csv
 import time
 
 from online_functions.create_ASM_batch import *
+from online_functions.run_bunch import *
 from models.deep_crnn_model import *
 from models.model_builders.create_dataset import *
 
@@ -21,8 +22,8 @@ from models.model_builders.create_dataset import *
 # for now dataset must be one of
 # iamHandwriting, BenthamDataset, combined, or ASM
 dataset = "ASM"
-n_epochs_per_bunch = 3
-bunch_size = 100
+n_epochs_per_bunch = 2
+bunch_size = 1000
 batch_size = 16
 
 
@@ -65,115 +66,42 @@ labels = tf.placeholder(tf.string, [None])
 out = deep_crnn(input_tensor, labels, input_shape, alphabet, batch_size, lastlayer=False)
 train_op, loss_ctc, CER, accuracy, prob, words = out
 
-# for getting rid of previous models (to save space)
-def remove_old_ckpt(b):
-    mdl_base = output_model_dir+"online_model" + b + ".ckpt"
-    try:
-        os.remove(mdl_base+".data-00000-of-00001")
-    except:
-        pass
-    
-    try:
-        os.remove(old_restore_nm+".index")
-    except:
-        pass
-
-    try:
-        os.remove(old_restore_nm+".meta")
-    except:
-        pass
-    
-    try:
-        os.remove(output_model_dir + "online_metrics" + b + ".pkl")
-    except:
-        pass
 
 # # Run model - looped
 
 restore_model_nm = input_model_nm
 data = pd.DataFrame(columns=["loss", "cer", "accuracy", "labels", "words", "filenames", "pred", "bunch", "epoch", "batch"])
 for b in range(0, data_size, bunch_size):
-    # ** create this "bunch" of the dataset **
-    create_ASM_batch(b, b+bunch_size-1, "../data")
-    
-    # ** Load dataset **
+    # Train the model with new data from ASM
+    # create this "bunch" of the dataset 
+    #create_ASM_batch(b, b+bunch_size, "../data") ##########################################################################
+    # Load dataset
     out = create_iterator(csv_file, input_shape, batch_size, False)
     dataset, iterator, next_batch, datasize = out
     n_batches = int(datasize / batch_size)
 
+    print("Training with new data")
+    data = run_bunch(restore_model_nm, output_graph_dir, n_epochs_per_bunch, iterator,
+              next_batch, n_batches, data, output_model_dir, train_op, CER, 
+              accuracy, loss_ctc, words, True, b, input_tensor, labels)
+    
+    # Train the model with old data from ASM, iam, and bentham
+    # create this "bunch" of the dataset 
+    create_random_batch(700, b+bunch_size-1, 300, "../data")
+    # Load dataset
+    out = create_iterator(csv_file, input_shape, batch_size, True)
+    dataset, iterator, next_batch, datasize = out
+    n_batches = int(datasize / batch_size)
 
-    print("Starting training...")
-    saver = tf.train.Saver()
+    print("Training with old data")
+#    data = run_bunch(restore_model_nm, output_graph_dir, 1, iterator,
+#              next_batch, n_batches, data, output_model_dir, train_op, CER, 
+#              accuracy, loss_ctc, words, False, b, input_tensor, labels)
+    
+    restore_model_nm = output_model_dir+"online_model" + str(b) + ".ckpt"
 
-    with tf.Session() as sess:
-        start_time = time.time()
-        sess.run(tf.global_variables_initializer())
-        sess.run(tf.local_variables_initializer())
-        sess.run(tf.tables_initializer())
-        saver.restore(sess, restore_model_nm)
+    # delete old files to save space - always keep 2 models
+    remove_old_ckpt(str(b-2*bunch_size))
 
-        writer = tf.summary.FileWriter(output_graph_dir, sess.graph)
-        
-        # monitor for errors and skip bunch when too many occur
-        num_errors = 0
-        for i in range(n_epochs_per_bunch):
-            sess.run(iterator.initializer)      
-            print("---------------------------------------------------------")
-            print("Starting epoch", i)
-            for j in range(0, n_batches):
-                input_tensor_b, labels_b, filenames_b = sess.run(next_batch)
-
-                if i < 1: # only predict on first run through
-                    # do prediction first
-                    pred = "pred"
-                    try:
-                        cer, acc, loss, wordz = sess.run([CER, accuracy, loss_ctc, words],
-                                     feed_dict={input_tensor: input_tensor_b, labels: labels_b})
-                        newdata = {"loss":loss, "cer":cer, "accuracy":[[acc]], 
-                                  "labels":[[labels_b]], "words":[[wordz]], "filenames":[[filenames_b]],
-                                   "pred":pred, "bunch":b, "epoch":i, "batch":j}
-                        print('batch: {0}:{5}:{4}, loss: {3} \n\tCER: {1}, accuracy: {2}'.format(b, cer, acc, loss, j, i))
-                    except:
-                        newdata = {"loss":-1, "cer":-1, "accuracy":[[-1, -1]], 
-                                  "labels":[[""]], "words":[[""]], "filenames":[[""]],
-                                   "pred":pred, "bunch":b, "epoch":i, "batch":j}
-                        print("Error at ", b, i, j)
-                    # save data
-                    newdata = pd.DataFrame.from_dict(newdata)
-                    data = data.append(newdata)
-                    pickle.dump(data, open(output_model_dir+"online_metrics" + str(b) + ".pkl", "wb"))
-                    saver.save(sess, output_model_dir+"online_model" + str(b) + ".ckpt")
-
-                # train with new data
-                pred = "train"
-                try:
-                    _, cer, acc, loss, wordz = sess.run([train_op, CER, accuracy, loss_ctc, words],
-                                 feed_dict={input_tensor: input_tensor_b, labels: labels_b})
-                    newdata = {"loss":loss, "cer":cer, "accuracy":[[acc]], 
-                              "labels":[[labels_b]], "words":[[wordz]], "filenames":[[filenames_b]],
-                                   "pred":pred, "bunch":b, "epoch":i, "batch":j}
-                    print('batch: {0}:{5}:{4}, loss: {3} \n\tCER: {1}, accuracy: {2}'.format(b, cer, acc, loss, j, i))
-                except:
-                    newdata = {"loss":-1, "cer":-1, "accuracy":[[-1, -1]], 
-                              "labels":[[""]], "words":[[""]], "filenames":[[""]],
-                                   "pred":pred, "bunch":b, "epoch":i, "batch":j}
-                    print("Error at ", b, i, j)
-                    num_errors += 1
-                # save data
-                newdata = pd.DataFrame.from_dict(newdata)
-                data = data.append(newdata)
-                pickle.dump(data, open(output_model_dir+"online_metrics" + str(b) + ".pkl", "wb"))
-                saver.save(sess, output_model_dir+"online_model" + str(b) + ".ckpt")
-                if num_errors > n_batches/2.0: # if half the batch is errors, stop
-                    print("Ending batch due to too many errors")
-                    break
-            print('Avg Epoch time: {0} seconds'.format((time.time() - start_time)/(1.0*(i+1))))
-            if num_errors > n_epochs_per_bunch * n_batches/3.0: # if one third of the bunch is errors, stop
-                print("Ending bunch due to too many errors")
-                break
-        restore_model_nm = output_model_dir+"online_model" + str(b) + ".ckpt"
-        # delete old files to save space - always keep 2 models
-        remove_old_ckpt(str(b-2*bunch_size))
-
-        print('Bunch Finished!') 
-        print(" ********************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************")
+    print('Bunch Finished!') 
+    print(" ********************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************")
