@@ -74,7 +74,7 @@ data = pd.DataFrame(columns=["loss", "cer", "accuracy", "labels", "words", "file
 for b in range(0, data_size, bunch_size):
     # Train the model with new data from ASM
     # create this "bunch" of the dataset 
-    #create_ASM_batch(b, b+bunch_size, "../data") ##########################################################################
+    create_ASM_batch(b, b+bunch_size, "../data")
     # Load dataset
     out = create_iterator(csv_file, input_shape, batch_size, False)
     dataset, iterator, next_batch, datasize = out
@@ -94,9 +94,9 @@ for b in range(0, data_size, bunch_size):
     n_batches = int(datasize / batch_size)
 
     print("Training with old data")
-#    data = run_bunch(restore_model_nm, output_graph_dir, 1, iterator,
-#              next_batch, n_batches, data, output_model_dir, train_op, CER, 
-#              accuracy, loss_ctc, words, False, b, input_tensor, labels)
+    data = run_bunch(restore_model_nm, output_graph_dir, 1, iterator,
+              next_batch, n_batches, data, output_model_dir, train_op, CER, 
+              accuracy, loss_ctc, words, False, b, input_tensor, labels)
     
     restore_model_nm = output_model_dir+"online_model" + str(b) + ".ckpt"
 
