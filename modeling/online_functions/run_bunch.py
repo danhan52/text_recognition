@@ -6,7 +6,7 @@ import time
 import os
 
 # for getting rid of previous models (to save space)
-def remove_old_ckpt(b, output_model_dir, ):
+def remove_old_ckpt(b, output_model_dir):
     mdl_base = output_model_dir+"online_model" + b + ".ckpt"
     try:
         os.remove(mdl_base+".data-00000-of-00001")
