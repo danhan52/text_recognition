@@ -35,7 +35,7 @@ def remove_old_ckpt(b, output_model_dir):
 #############################################################################################################
 # run one update
 def run_one_update(train_op, CER, accuracy, loss_ctc, words, input_tensor_b, labels_b, filenames_b,
-                   data, output_model_dir, sess, b, i, j, num_errors, saver, input_tensor, labels):
+                   data, output_model_dir, sess, b, i, j, num_errors, saver, input_tensor, labels, oldnew):
     if train_op is not None:
         pred = "train"
     else:
@@ -50,12 +50,12 @@ def run_one_update(train_op, CER, accuracy, loss_ctc, words, input_tensor_b, lab
                                              feed_dict={input_tensor: input_tensor_b, labels: labels_b})
         newdata = {"loss":loss, "cer":cer, "accuracy":[[acc]], 
                    "labels":[[labels_b]], "words":[[wordz]], "filenames":[[filenames_b]],
-                   "pred":pred, "bunch":b, "epoch":i, "batch":j}
+                   "pred":pred, "bunch":b, "epoch":i, "batch":j, "oldnew":oldnew}
         print('batch: {0}:{5}:{4}, loss: {3} \n\tCER: {1}, accuracy: {2}'.format(b, cer, acc, loss, j, i))
     except:
         newdata = {"loss":-1, "cer":-1, "accuracy":[[-1, -1]], 
                    "labels":[[""]], "words":[[""]], "filenames":[[""]],
-                   "pred":pred, "bunch":b, "epoch":i, "batch":j}
+                   "pred":pred, "bunch":b, "epoch":i, "batch":j, "oldnew":oldnew}
         print("Error at ", b, i, j)
         num_errors += 1
     # save data
@@ -73,7 +73,8 @@ def run_one_update(train_op, CER, accuracy, loss_ctc, words, input_tensor_b, lab
 # run a single bunch
 def run_bunch(restore_model_nm, output_graph_dir, n_epochs_per_bunch, iterator,
               next_batch, n_batches, data, output_model_dir, train_op, 
-              CER, accuracy, loss_ctc, words, do_predict, b, input_tensor, labels):
+              CER, accuracy, loss_ctc, words, do_predict, b, input_tensor, labels,
+              oldnew):
     saver = tf.train.Saver()
 
     with tf.Session() as sess:
@@ -97,13 +98,15 @@ def run_bunch(restore_model_nm, output_graph_dir, n_epochs_per_bunch, iterator,
                     data, num_errors = run_one_update(None, CER, accuracy, loss_ctc, words,
                                           input_tensor_b, labels_b, filenames_b,
                                           data, output_model_dir, sess, b, i, j,
-                                          num_errors, saver, input_tensor, labels)
+                                          num_errors, saver, input_tensor, labels,
+                                                     oldnew)
                     
                 # train with new data
                 data, num_errors = run_one_update(train_op, CER, accuracy, loss_ctc, words,
                                           input_tensor_b, labels_b, filenames_b,
                                           data, output_model_dir, sess, b, i, j,
-                                          num_errors, saver, input_tensor, labels)
+                                          num_errors, saver, input_tensor, labels,
+                                                     oldnew)
                 
                 if num_errors > n_batches/2.0: # if half the batch is errors, stop
                     print("Ending batch due to too many errors")

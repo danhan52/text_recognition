@@ -70,11 +70,17 @@ train_op, loss_ctc, CER, accuracy, prob, words = out
 # # Run model - looped
 
 restore_model_nm = input_model_nm
-data = pd.DataFrame(columns=["loss", "cer", "accuracy", "labels", "words", "filenames", "pred", "bunch", "epoch", "batch"])
+data = pd.DataFrame(columns=["loss", "cer", "accuracy", "labels", "words", "filenames", "pred", "bunch", "epoch", "batch", "oldnew"])
 for b in range(0, data_size, bunch_size):
     # Train the model with new data from ASM
-    # create this "bunch" of the dataset 
-    create_ASM_batch(b, b+bunch_size, "../data")
+    # create this "bunch" of the dataset
+    redo = True
+    while redo:
+        try:
+            create_ASM_batch(b, b+bunch_size, "../data")
+            redo = False
+        except:
+            redo = True
     # Load dataset
     out = create_iterator(csv_file, input_shape, batch_size, False)
     dataset, iterator, next_batch, datasize = out
@@ -83,11 +89,17 @@ for b in range(0, data_size, bunch_size):
     print("Training with new data")
     data = run_bunch(restore_model_nm, output_graph_dir, n_epochs_per_bunch, iterator,
               next_batch, n_batches, data, output_model_dir, train_op, CER, 
-              accuracy, loss_ctc, words, True, b, input_tensor, labels)
+              accuracy, loss_ctc, words, True, b, input_tensor, labels, "new")
     
     # Train the model with old data from ASM, iam, and bentham
     # create this "bunch" of the dataset 
-    create_random_batch(700, b+bunch_size-1, 300, "../data")
+    redo = True
+    while redo:
+        try:
+            create_random_batch(700, b+bunch_size-1, 300, "../data")
+            redo = False
+        except:
+            redo = True
     # Load dataset
     out = create_iterator(csv_file, input_shape, batch_size, True)
     dataset, iterator, next_batch, datasize = out
@@ -96,7 +108,7 @@ for b in range(0, data_size, bunch_size):
     print("Training with old data")
     data = run_bunch(restore_model_nm, output_graph_dir, 1, iterator,
               next_batch, n_batches, data, output_model_dir, train_op, CER, 
-              accuracy, loss_ctc, words, False, b, input_tensor, labels)
+              accuracy, loss_ctc, words, False, b, input_tensor, labels, "old")
     
     restore_model_nm = output_model_dir+"online_model" + str(b) + ".ckpt"
 
