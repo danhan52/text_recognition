@@ -106,7 +106,7 @@ def run_epochs(saver,
                 data = data.append(newdata)
                 pickle.dump(data, open(output_model_dir+"online_metrics" + str(trg) + ".pkl", "wb"))
                 saver.save(sess, output_model_dir+"online_model" + str(trg) + ".ckpt")
-                if not err: break
+                #if not err: break
             print('Avg Epoch time: {0} seconds'.format((time.time() - start_time)/(1.0*(i+1))))
     return data
 
