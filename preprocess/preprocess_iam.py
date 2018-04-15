@@ -2,8 +2,10 @@ import numpy as np
 import pandas as pd
 import os
 import sys
+import re
+from PIL import Image
 
-def preprocess_iam_lines():
+def preprocess_iam_lines(resize_to=1.0, resize_dir=""):
     #### Read in data
     data_list = []
 
@@ -51,13 +53,42 @@ def preprocess_iam_lines():
 
     # get rid of the really big images
     data_df = data_df[np.logical_and(data_df.w_bound < w95, data_df.h_bound < h95)]
-
+    
+    #### Resize images (if requested)
+    if resize_to != 1.0:
+        if not os.path.isdir("../data/iamHandwriting/" + resize_dir):
+            os.mkdir("../data/iamHandwriting/" + resize_dir)
+        count = 0
+        onepercent = len(data_df)//100
+        tenpercent = onepercent*10
+        def replace_lines(fn):
+            m = re.sub("lines/[a-z]+[0-9]+/[a-z]+[0-9]+-[0-9a-z]+/(.*\.png)", resize_dir+"/\\1", fn)
+            m = m.replace("//", "/")
+            return m
+        
+        for fn in data_df["path"]:
+            img = Image.open(fn)
+            img = img.resize([int(i) for i in np.floor(np.multiply(resize_to, img.size))])
+            img.save(replace_lines(fn))
+            img.close()
+            
+            count += 1
+            if count % onepercent == 0:
+                if count % tenpercent == 0:
+                    perc = count//onepercent
+                    print(str(perc)+"%", end="", flush=True)
+                else:
+                    print(".", end="", flush=True)
+        data_df["path"] = data_df["path"].apply(replace_lines)
+        print("\nResized max image size (width, height): ({0}, {1})".format(str(round(w95*resize_to)), str(round(h95*resize_to))))
+        with open("../data/iamHandwriting/img_size.txt", "w") as f:
+            f.write(",".join([str(round(w95*resize_to)), str(round(h95*resize_to))]))
+    
     #### Save all lines
     data_df["new_img_path"] = data_df["path"]
     data_df = data_df[["new_img_path", "transcription"]]
     data_df.to_csv("../data/iamHandwriting/train.csv", sep="\t", index=False)
     print(str(len(data_df)) + " images in train.csv")
-
     
     #### Find freqency of letters
     letters = dict()
@@ -165,7 +196,10 @@ def preprocess_iam():
         print("You must have at least one argument for lines or words")
         sys.exit(0)
     if sys.argv[1] == "lines":
-        preprocess_iam_lines()
+        if len(sys.argv) < 4:
+            preprocess_iam_lines()
+        else:
+            preprocess_iam_lines(float(sys.argv[2]), sys.argv[3])
     elif sys.argv[1] == "words":
         if len(sys.argv) < 3:
             print("For words, you must specify 0 for only lowercase and 1 for all letters")

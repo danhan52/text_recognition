@@ -9,8 +9,8 @@ import pickle
 import csv
 import time
 
-from online_functions.create_ASM_batch import *
 from online_functions.run_bunch import *
+from online_functions.create_ASM_batch import *
 from models.deep_crnn_model import *
 from models.model_builders.create_dataset import *
 
@@ -22,7 +22,7 @@ from models.model_builders.create_dataset import *
 # for now dataset must be one of
 # iamHandwriting, BenthamDataset, combined, or ASM
 dataset = "ASM"
-n_epochs_per_bunch = 2
+n_epochs_per_bunch = 1
 bunch_size = 1000
 batch_size = 16
 
@@ -66,54 +66,112 @@ labels = tf.placeholder(tf.string, [None])
 out = deep_crnn(input_tensor, labels, input_shape, alphabet, batch_size, lastlayer=False)
 train_op, loss_ctc, CER, accuracy, prob, words = out
 
+# I'll have to choose what my data generation function is above
+new_data_generator = create_ASM_batch # e.g.
+old_data_generator = create_random_batch # e.g.
 
 # # Run model - looped
 
 restore_model_nm = input_model_nm
-data = pd.DataFrame(columns=["loss", "cer", "accuracy", "labels", "words", "filenames", "pred", "bunch", "epoch", "batch", "oldnew"])
-for b in range(0, data_size, bunch_size):
-    # Train the model with new data from ASM
-    # create this "bunch" of the dataset
-    redo = True
-    while redo:
-        try:
-            create_ASM_batch(b, b+bunch_size, "../data")
-            redo = False
-        except:
-            redo = True
+data = pd.DataFrame(columns=["tr_group", "oldnew", "pred", "epoch", "batch", # location information
+                             "loss", "cer", "accuracy", "labels", "words", "filenames"])
+for trg in range(0, data_size, bunch_size):
+    saver = tf.train.Saver()
+    
+    # create this training group of the dataset ##########################################################################
+#     redo = True
+#     while redo:
+#         try:
+#             new_data_generator(b, b+bunch_size, "../data")
+#             redo = False
+#         except:
+#             redo = True
     # Load dataset
     out = create_iterator(csv_file, input_shape, batch_size, False)
     dataset, iterator, next_batch, datasize = out
     n_batches = int(datasize / batch_size)
 
-    print("Training with new data")
-    data = run_bunch(restore_model_nm, output_graph_dir, n_epochs_per_bunch, iterator,
-              next_batch, n_batches, data, output_model_dir, train_op, CER, 
-              accuracy, loss_ctc, words, True, b, input_tensor, labels, "new")
+    # predict on the current batch of data ##############################################################################
+    print("Predict new data")
+    data = run_epochs(saver = saver,
+                      restore_model_nm = restore_model_nm,
+                      n_epochs_per_bunch = 1,
+                      iterator = iterator,
+                      n_batches = n_batches,
+                      next_batch = next_batch,
+                      train_op = None,
+                      CER = CER,
+                      accuracy = accuracy,
+                      loss_ctc = loss_ctc,
+                      words = words,
+                      input_tensor = input_tensor,
+                      labels = labels,
+                      trg = trg,
+                      data = data,
+                      output_model_dir = output_model_dir,
+                      oldnew = "new",
+                      pred = "pred")
+            
+    # train on the current batch of data ##############################################################################
+    print("Train on new data")
+    data = run_epochs(saver = saver,
+                      restore_model_nm = restore_model_nm,
+                      n_epochs_per_bunch = n_epochs_per_bunch,
+                      iterator = iterator,
+                      n_batches = n_batches,
+                      next_batch = next_batch,
+                      train_op = train_op,
+                      CER = CER,
+                      accuracy = accuracy,
+                      loss_ctc = loss_ctc,
+                      words = words,
+                      input_tensor = input_tensor,
+                      labels = labels,
+                      trg = trg,
+                      data = data,
+                      output_model_dir = output_model_dir,
+                      oldnew = "new",
+                      pred = "train")
     
     # Train the model with old data from ASM, iam, and bentham
-    # create this "bunch" of the dataset 
-    redo = True
-    while redo:
-        try:
-            create_random_batch(700, b+bunch_size-1, 300, "../data")
-            redo = False
-        except:
-            redo = True
+    # create the old training group of the dataset ##########################################################################
+#     redo = True
+#     while redo:
+#         try:
+#             old_data_generator(b, b+bunch_size, "../data")
+#             redo = False
+#         except:
+#             redo = True
     # Load dataset
     out = create_iterator(csv_file, input_shape, batch_size, True)
     dataset, iterator, next_batch, datasize = out
     n_batches = int(datasize / batch_size)
-
-    print("Training with old data")
-    data = run_bunch(restore_model_nm, output_graph_dir, 1, iterator,
-              next_batch, n_batches, data, output_model_dir, train_op, CER, 
-              accuracy, loss_ctc, words, False, b, input_tensor, labels, "old")
     
-    restore_model_nm = output_model_dir+"online_model" + str(b) + ".ckpt"
+    # train on the current batch of data ##############################################################################
+    print("Training with old data")
+    data = run_epochs(saver = saver,
+                      restore_model_nm = restore_model_nm,
+                      n_epochs_per_bunch = n_epochs_per_bunch,
+                      iterator = iterator,
+                      n_batches = n_batches,
+                      next_batch = next_batch,
+                      train_op = train_op,
+                      CER = CER,
+                      accuracy = accuracy,
+                      loss_ctc = loss_ctc,
+                      words = words,
+                      input_tensor = input_tensor,
+                      labels = labels,
+                      trg = trg,
+                      data = data,
+                      output_model_dir = output_model_dir,
+                      oldnew = "old",
+                      pred = "train")
+    
+    restore_model_nm = output_model_dir+"online_model" + str(trg) + ".ckpt"
 
     # delete old files to save space - always keep 2 models
-    remove_old_ckpt(str(b-2*bunch_size), output_model_dir)
+    remove_old_ckpt(str(trg-2*bunch_size), output_model_dir)
 
-    print('Bunch Finished!') 
+    print('Training Group Finished!') 
     print(" ********************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************")
