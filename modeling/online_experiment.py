@@ -79,13 +79,13 @@ for trg in range(0, data_size, bunch_size):
     saver = tf.train.Saver()
     
     # create this training group of the dataset ##########################################################################
-#     redo = True
-#     while redo:
-#         try:
-#             new_data_generator(b, b+bunch_size, "../data")
-#             redo = False
-#         except:
-#             redo = True
+    redo = True
+    while redo:
+         try:
+            new_data_generator(b, b+bunch_size, "../data")
+            redo = False
+        except:
+            redo = True
     # Load dataset
     out = create_iterator(csv_file, input_shape, batch_size, False)
     dataset, iterator, next_batch, datasize = out
@@ -135,13 +135,13 @@ for trg in range(0, data_size, bunch_size):
     
     # Train the model with old data from ASM, iam, and bentham
     # create the old training group of the dataset ##########################################################################
-#     redo = True
-#     while redo:
-#         try:
-#             old_data_generator(b, b+bunch_size, "../data")
-#             redo = False
-#         except:
-#             redo = True
+    redo = True
+    while redo:
+        try:
+            old_data_generator(b, b+bunch_size, "../data")
+            redo = False
+        except:
+            redo = True
     # Load dataset
     out = create_iterator(csv_file, input_shape, batch_size, True)
     dataset, iterator, next_batch, datasize = out

@@ -17,7 +17,7 @@ from models.model_builders.create_dataset import *
 # for now dataset must be one of
 # iamHandwriting, BenthamDataset, or combined
 dataset = "iamHandwriting"
-n_epochs = 5
+n_epochs = 1
 batch_size = 16
 
 
@@ -26,7 +26,7 @@ data_folder = "../data/" + dataset
 csv_file = data_folder + "/train.csv"
 output_model_dir = "./tf_output/estimator/"
 output_graph_dir = "./tf_output/graph/"
-input_model_dir = ""# "./tf_output/input_model/"
+input_model_dir = "./tf_output/input_model/"
 
 optimizer='adam'
 learning_rate=1e-3
@@ -56,7 +56,7 @@ train_op, loss_ctc, CER, accuracy, prob, words = out
 
 
 # ** Load dataset **
-out = create_iterator(csv_file, input_shape, batch_size, True)
+out = create_iterator(csv_file, input_shape, batch_size, False)
 dataset, iterator, next_batch, datasize = out
 n_batches = int(datasize / batch_size)
 
@@ -64,13 +64,9 @@ n_batches = int(datasize / batch_size)
 # ** Train model **
 saver = tf.train.Saver()
 
-if input_model_dir != "":
-    data = pickle.load(open(input_model_dir+"metrics.pkl", "rb"))
-    restore_model_nm = input_model_dir + "model.ckpt"
-else:
-    data = pd.DataFrame(columns=["tr_group", "oldnew", "pred", "epoch", "batch", # location information
-                                 "loss", "cer", "accuracy", "labels", "words", "filenames"])
-    restore_model_nm = ""
+data = pd.DataFrame(columns=["tr_group", "oldnew", "pred", "epoch", "batch", # location information
+                             "loss", "cer", "accuracy", "labels", "words", "filenames"])
+restore_model_nm = ""
 
 run_epochs(saver = saver,
            restore_model_nm = restore_model_nm,
@@ -78,7 +74,7 @@ run_epochs(saver = saver,
            iterator = iterator,
            n_batches = n_batches,
            next_batch = next_batch,
-           train_op = train_op,
+           train_op = None,
            CER = CER,
            accuracy = accuracy,
            loss_ctc = loss_ctc,
@@ -89,6 +85,6 @@ run_epochs(saver = saver,
            data = data,
            output_model_dir = output_model_dir,
            oldnew = "new",
-           pred = "train")
+           pred = "pred")
 
-print("Optimization finished!")
+print("Prediction finished!")
