@@ -74,7 +74,7 @@ old_data_generator = create_random_batch # e.g.
 
 restore_model_nm = input_model_nm
 data = pd.DataFrame(columns=["tr_group", "oldnew", "pred", "epoch", "batch", # location information
-                             "loss", "cer", "accuracy", "labels", "words", "filenames"])
+                             "loss", "cer", "accuracy", "labels", "words", "filenames", "time"])
 for trg in range(0, data_size, bunch_size):
     saver = tf.train.Saver()
     

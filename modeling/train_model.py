@@ -69,7 +69,7 @@ if input_model_dir != "":
     restore_model_nm = input_model_dir + "model.ckpt"
 else:
     data = pd.DataFrame(columns=["tr_group", "oldnew", "pred", "epoch", "batch", # location information
-                                 "loss", "cer", "accuracy", "labels", "words", "filenames"])
+                                 "loss", "cer", "accuracy", "labels", "words", "filenames", "time"])
     restore_model_nm = ""
 
 run_epochs(saver = saver,
