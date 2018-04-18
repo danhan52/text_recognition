@@ -90,7 +90,7 @@ if __name__ == "__main__":
     if len(sys.argv) == 2:
         run_train_model(dataset = sys.argv[1])
     elif len(sys.argv) == 3:
-        run_predict_model(dataset = sys.argv[1],
+        run_train_model(dataset = sys.argv[1],
                           n_epochs = int(sys.argv[2]))
     elif len(sys.argv) == 4:
         run_train_model(dataset = sys.argv[1],
