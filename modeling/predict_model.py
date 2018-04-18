@@ -61,7 +61,7 @@ n_batches = int(datasize / batch_size)
 saver = tf.train.Saver()
 
 data = pd.DataFrame(columns=["tr_group", "oldnew", "pred", "epoch", "batch", # location information
-                             "loss", "cer", "accuracy", "labels", "words", "filenames"])
+                             "loss", "cer", "accuracy", "labels", "words", "filenames", "time"])
 restore_model_nm = input_model_dir + "model.ckpt"
 
 run_epochs(saver = saver,

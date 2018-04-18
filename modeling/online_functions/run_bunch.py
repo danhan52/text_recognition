@@ -7,7 +7,7 @@ import os
 
 # for getting rid of previous models (to save space)
 def remove_old_ckpt(b, output_model_dir):
-    mdl_base = output_model_dir+"online_model" + b + ".ckpt"
+    mdl_base = output_model_dir+"model" + b + ".ckpt"
     try:
         os.remove(mdl_base+".data-00000-of-00001")
     except:
@@ -24,7 +24,7 @@ def remove_old_ckpt(b, output_model_dir):
         pass
     
     try:
-        os.remove(output_model_dir + "online_metrics" + b + ".pkl")
+        os.remove(output_model_dir + "metrics" + b + ".pkl")
     except:
         pass
     
@@ -88,7 +88,8 @@ def run_epochs(saver,
                                "accuracy":[[acc]],
                                "labels":[[labels_b]],
                                "words":[[wordz]],
-                               "filenames":[[filenames_b]]}
+                               "filenames":[[filenames_b]],
+                               "time":time.time()-start_time}
                     print('batch: {0}:{1}:{2}, loss: {3} \n\tCER: {4}, accuracy: {5}'.format(trg, i, j, loss, cer, acc))
                 except:
                     newdata = {"tr_group":trg,
@@ -101,15 +102,16 @@ def run_epochs(saver,
                                "accuracy":[[-1, -1]],
                                "labels":[[labels_b]],
                                "words":[[""]],
-                               "filenames":[[filenames_b]]}
+                               "filenames":[[filenames_b]],
+                               "time":time.time()-start_time}
                     print("Error at {0}:{1}:{2}".format(trg, i, j))
                     err = True
                 # save data
                 newdata = pd.DataFrame.from_dict(newdata)
                 data = data.append(newdata)
-                pickle.dump(data, open(output_model_dir+"online_metrics" + str(trg) + ".pkl", "wb"))
-                saver.save(sess, output_model_dir+"online_model" + str(trg) + ".ckpt")
-                if not err and j > 2: break
+                pickle.dump(data, open(output_model_dir+"metrics" + str(trg) + ".pkl", "wb"))
+                saver.save(sess, output_model_dir+"model" + str(trg) + ".ckpt")
+                #if not err and j > 2: break
             print('Avg Epoch time: {0} seconds'.format((time.time() - start_time)/(1.0*(i+1))))
         if output_graph_dir != "":
             writer.close()
