@@ -25,6 +25,7 @@ dataset = "ASM"
 n_epochs_per_bunch = 1
 bunch_size = 1000
 batch_size = 16
+resize_to = 0.5
 
 
 # ** Less important parameters **
@@ -81,7 +82,7 @@ for trg in range(0, data_size, bunch_size):
     redo = True
     while redo:
         try:
-            new_data_generator(trg, trg+bunch_size, "../data")
+            new_data_generator(trg, trg+bunch_size, resize_to, "../data")
             redo = False
         except:
             print("Error during batch creation, redoing")
@@ -138,7 +139,7 @@ for trg in range(0, data_size, bunch_size):
     redo = True
     while redo:
         try:
-            old_data_generator(trg, trg+bunch_size, "../data")
+            old_data_generator(1000, trg, 0, resize_to, "../data")
             redo = False
         except:
             redo = True
