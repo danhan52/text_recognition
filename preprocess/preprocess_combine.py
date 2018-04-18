@@ -1,17 +1,23 @@
 import pandas as pd
 import os
+import sys
 from preprocess_iam import preprocess_iam_lines
 from preprocess_bentham import preprocess_bentham
 
+if len(sys.argv) > 1:
+    resize_to = float(sys.argv[1])
+else:
+    resize_to = 1.0
+
 # run preprocessing scripts to get ensure data is in place
 print("Running preprocessing on iam lines")
-preprocess_iam_lines()
-img_exists = os.path.exists("../data/BenthamDataset/img_size.txt")
-alp_exists = os.path.exists("../data/BenthamDataset/alphabet.txt")
-dir_exists = os.path.exists("../data/BenthamDataset/Images_mod")
-if not (img_exists and alp_exists and dir_exists):
-    print("Running preprocessing on Bentham")
-    preprocess_bentham()
+preprocess_iam_lines(resize_to=resize_to, resize_dir="lines_small")
+#img_exists = os.path.exists("../data/BenthamDataset/img_size.txt")
+#alp_exists = os.path.exists("../data/BenthamDataset/alphabet.txt")
+#dir_exists = os.path.exists("../data/BenthamDataset/Images_mod")
+#if not (img_exists and alp_exists and dir_exists):
+print("Running preprocessing on Bentham")
+preprocess_bentham(resize_to=resize_to)
 
 if not os.path.isdir("../data/combined/"):
     os.mkdir("../data/combined/")

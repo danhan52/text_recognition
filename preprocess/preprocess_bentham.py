@@ -12,7 +12,7 @@ def my_print(text):
     sys.stdout.write(str(text) + "\t")
     sys.stdout.flush()
 
-def preprocess_bentham():
+def preprocess_bentham(resize_to = 1.0):
     #### Read in data and modify data
     local_path = os.getcwd().replace("\\", "/")
     local_path = local_path.replace("preprocess", "")
@@ -48,10 +48,17 @@ def preprocess_bentham():
         return im
     img_list = []
     count = 0
+    onepercent = len(data_df)//100
+    tenpercent = onepercent*10
     for f in data_df.imgnames:
         img_list.append(readBenthamImg(f))
         count += 1
-        if count % 1000 == 0: my_print(count)
+        if count % onepercent == 0:
+            if count % tenpercent == 0:
+                perc = count//onepercent
+                print(str(perc)+"%", end="", flush=True)
+            else:
+                print(".", end="", flush=True)
     data_df["images"] = img_list
     print()
     print(str(count) + " images read")
@@ -82,17 +89,19 @@ def preprocess_bentham():
                          for t in data_df.transcription]
     data_df = data_df[np.logical_not(data_df.nonhex)]
     
-    # temporary ######################################################################################
-    if False:
-        al = " !\"#&'()*+,-./0123456789:;?ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
-        data_df["iam"] = [all([i in al for i in t]) for t in data_df.transcription]
-        print(len(data_df))
-        data_df = data_df[data_df.iam]
-        print(len(data_df))
-        import sys
-        sys.exit(0)
-    # temporary ######################################################################################
+    
+    #### Resize images (if requested)
+    if resize_to != 1.0:
+        def resize_imgs(img):
+            img = img.resize([int(i) for i in np.floor(np.multiply(resize_to, img.size))])
+            return img
+        data_df["images"] = data_df["images"].apply(resize_imgs)
+        
+        print("\nResized max image size (width, height): ({0}, {1})".format(str(round(w95*resize_to)), str(round(h95*resize_to))))
+        with open("../data/iamHandwriting/img_size.txt", "w") as f:
+            f.write(",".join([str(round(w95*resize_to)), str(round(h95*resize_to))]))
 
+    
     #### Save new images
     new_img_dir = local_path + "/data/BenthamDataset/Images_mod/"
     if not os.path.isdir(new_img_dir):
@@ -101,13 +110,19 @@ def preprocess_bentham():
 
     print("Saving modified images...")
     count = 0
+    onepercent = len(data_df)//100
+    tenpercent = onepercent*10
     for i in data_df.index:
         data_df.loc[i, "images"].save(data_df.loc[i, "new_img_path"])
         count += 1
-        if count % 1000 == 0: my_print(count)
+        if count % onepercent == 0:
+            if count % tenpercent == 0:
+                perc = count//onepercent
+                print(str(perc)+"%", end="", flush=True)
+            else:
+                print(".", end="", flush=True)
     print()
     print(str(count) + " images saved")
-
 
     #### Save training file
     export_df = data_df[["new_img_path", "transcription"]]
@@ -130,4 +145,7 @@ def preprocess_bentham():
     print("Letter freqencies:\n", letters)
 
 if __name__ == "__main__":
-    preprocess_bentham()
+    if len(sys.argv) >= 2:
+        preprocess_bentham(float(sys.argv[1]))
+    else:
+        preprocess_bentham()

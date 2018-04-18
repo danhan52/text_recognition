@@ -3,32 +3,6 @@ import pandas as pd
 import tensorflow as tf
 import pickle
 import time
-import os
-
-# for getting rid of previous models (to save space)
-def remove_old_ckpt(b, output_model_dir):
-    mdl_base = output_model_dir+"model" + b + ".ckpt"
-    try:
-        os.remove(mdl_base+".data-00000-of-00001")
-    except:
-        pass
-    
-    try:
-        os.remove(mdl_base+".index")
-    except:
-        pass
-
-    try:
-        os.remove(mdl_base+".meta")
-    except:
-        pass
-    
-    try:
-        os.remove(output_model_dir + "metrics" + b + ".pkl")
-    except:
-        pass
-    
-    return
 
 
 #############################################################################################################

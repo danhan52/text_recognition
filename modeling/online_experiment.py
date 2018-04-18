@@ -63,8 +63,6 @@ out = deep_crnn(input_tensor, labels, input_shape, alphabet, batch_size,
                 lastlayer=False, is_training=True)
 train_op, loss_ctc, CER, accuracy, prob, words = out
 
-print("Creating prediction model")
-
 # I'll have to choose what my data generation function is above
 new_data_generator = create_ASM_batch # e.g.
 old_data_generator = create_random_batch # e.g.

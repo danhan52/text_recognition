@@ -1,12 +1,39 @@
 import numpy as np
 import pandas as pd
 import os
+import sys
 import pickle
 
 from PIL import Image
 import PIL
 import requests
 from io import BytesIO
+
+
+# for getting rid of previous models (to save space)
+def remove_old_ckpt(b, output_model_dir):
+    mdl_base = output_model_dir+"model" + b + ".ckpt"
+    try:
+        os.remove(mdl_base+".data-00000-of-00001")
+    except:
+        pass
+    
+    try:
+        os.remove(mdl_base+".index")
+    except:
+        pass
+
+    try:
+        os.remove(mdl_base+".meta")
+    except:
+        pass
+    
+    try:
+        os.remove(output_model_dir + "metrics" + b + ".pkl")
+    except:
+        pass
+    
+    return
 
 
 def readImg(url, grey=True):
@@ -16,7 +43,7 @@ def readImg(url, grey=True):
     return img
 
 # create a batch with the next group of data from ASM
-def create_ASM_batch(batch_start=0, batch_end=1000, data_loc="../../data"):
+def create_ASM_batch(batch_start=0, batch_size=1000, resize_to=1.0, data_loc="../data"):
     # Read in all classifications
     sv_fold = data_loc + "/ASM/"
     if not os.path.isdir(sv_fold+"Images"):
@@ -49,7 +76,7 @@ def create_ASM_batch(batch_start=0, batch_end=1000, data_loc="../../data"):
         maxh = int(float(h))
 
     # loop to get data
-    curdata = data.iloc[batch_start:batch_end]
+    curdata = data.iloc[batch_start:(batch_start+batch_size)]
     train_lines = []
     img_files = []
     count = 0
@@ -71,8 +98,9 @@ def create_ASM_batch(batch_start=0, batch_end=1000, data_loc="../../data"):
         if img_line.size[1] > maxh:
             ratio = maxh / float(img.size[1])
             wnew = int(float(img.size[0]) * float(ratio))
-            img_line.resize((wnew, maxh), PIL.Image.ANTIALIAS)
-
+            img_line = img_line.resize((wnew, maxh), PIL.Image.ANTIALIAS)
+        
+        img_line = img_line.resize([int(j) for j in np.floor(np.multiply(resize_to, img_line.size))])
         img_line_np = np.array(img_line)
 
         # turn everything above previous line white - slope top
@@ -114,7 +142,7 @@ def create_ASM_batch(batch_start=0, batch_end=1000, data_loc="../../data"):
 
 
 # create a random batch with ASM and iam/bentham data
-def create_random_batch(batch_size_ASM=700, batch_end=1000, batch_size_combine=300, data_loc="../../data"):
+def create_random_batch(batch_size_ASM=1000, batch_end=1000, batch_size_combine=0, resize_to=1.0, data_loc="../data"):
     # Read in all classifications
     sv_fold = data_loc + "/ASM/"
     if not os.path.isdir(sv_fold+"Images"):
@@ -170,8 +198,9 @@ def create_random_batch(batch_size_ASM=700, batch_end=1000, batch_size_combine=3
         if img_line.size[1] > maxh:
             ratio = maxh / float(img.size[1])
             wnew = int(float(img.size[0]) * float(ratio))
-            img_line.resize((wnew, maxh), PIL.Image.ANTIALIAS)
+            img_line = img_line.resize((wnew, maxh), PIL.Image.ANTIALIAS)
 
+        img_line = img_line.resize([int(j) for j in np.floor(np.multiply(resize_to, img_line.size))])
         img_line_np = np.array(img_line)
 
         # turn everything above previous line white - slope top
@@ -218,3 +247,30 @@ def create_random_batch(batch_size_ASM=700, batch_end=1000, batch_size_combine=3
     savedata.to_csv(data_loc + "/ASM/train.csv", sep="\t", index=False)
     print("\n{0} training records created".format(len(savedata)))
     return
+
+if __name__ == "__main__":
+    if len(sys.argv) > 1:
+        if sys.argv[1] == "rem":
+            remove_old_ckpt(b=sys.argv[2], output_model_dir=sys.argv[3])
+        elif sys.argv[1] == "asm":
+            redo = True
+            while redo:
+                try:
+                    create_ASM_batch(batch_start=int(sys.argv[2]), batch_size=int(sys.argv[3]), resize_to=float(sys.argv[4]))
+                    redo = False
+                except:
+                    print("Error during batch creation, redoing")
+                    redo = True
+            
+        elif sys.argv[1] == "rand":
+            redo = True
+            while redo:
+                try:
+                    create_random_batch(batch_end=int(sys.argv[2]), resize_to=float(sys.argv[3]))
+                    redo = False
+                except:
+                    print("Error during batch creation, redoing")
+                    redo = True
+        else:
+            print("First argument must be one of rm, asm, and rand")
+            
