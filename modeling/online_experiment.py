@@ -36,11 +36,6 @@ output_preds_dir = "./tf_output/prediction/"
 output_graph_dir = "./tf_output/graph/"
 input_model_nm = "./tf_output/input_model/model.ckpt"
 
-optimizer='adam'
-learning_rate=1e-3
-learning_decay_rate=0.95
-learning_decay_steps=5000
-
 # load input_shape from file output by preprocess
 with open(data_folder + "/img_size.txt", "r") as f:
     doc = f.readline()
@@ -60,11 +55,15 @@ with open(data_folder + "/data_size.txt") as f:
 
 
 # ** Create model ops **
+print("Creating training model")
 input_tensor = tf.placeholder(tf.float32, [None, input_shape[0], input_shape[1], 1])
 labels = tf.placeholder(tf.string, [None])
 
-out = deep_crnn(input_tensor, labels, input_shape, alphabet, batch_size, lastlayer=False)
+out = deep_crnn(input_tensor, labels, input_shape, alphabet, batch_size,
+                lastlayer=False, is_training=True)
 train_op, loss_ctc, CER, accuracy, prob, words = out
+
+print("Creating prediction model")
 
 # I'll have to choose what my data generation function is above
 new_data_generator = create_ASM_batch # e.g.
@@ -72,6 +71,7 @@ old_data_generator = create_random_batch # e.g.
 
 # # Run model - looped
 
+print("Starting model")
 restore_model_nm = input_model_nm
 data = pd.DataFrame(columns=["tr_group", "oldnew", "pred", "epoch", "batch", # location information
                              "loss", "cer", "accuracy", "labels", "words", "filenames"])
@@ -79,12 +79,14 @@ for trg in range(0, data_size, bunch_size):
     saver = tf.train.Saver()
     
     # create this training group of the dataset ##########################################################################
+    print("Creating data batch")
     redo = True
     while redo:
-         try:
-            new_data_generator(b, b+bunch_size, "../data")
+        try:
+            new_data_generator(trg, trg+bunch_size, "../data")
             redo = False
         except:
+            print("Error during batch creation, redoing")
             redo = True
     # Load dataset
     out = create_iterator(csv_file, input_shape, batch_size, False)
@@ -138,7 +140,7 @@ for trg in range(0, data_size, bunch_size):
     redo = True
     while redo:
         try:
-            old_data_generator(b, b+bunch_size, "../data")
+            old_data_generator(trg, trg+bunch_size, "../data")
             redo = False
         except:
             redo = True

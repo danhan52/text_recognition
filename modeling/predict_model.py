@@ -15,8 +15,8 @@ from models.model_builders.create_dataset import *
 # # Model parameters
 # ** Important editable parameters **
 # for now dataset must be one of
-# iamHandwriting, BenthamDataset, or combined
-dataset = "iamHandwriting"
+# iamHandwriting, BenthamDataset, BenthamTest, or combined
+dataset = "BenthamTest"
 n_epochs = 1
 batch_size = 16
 
@@ -27,11 +27,6 @@ csv_file = data_folder + "/train.csv"
 output_model_dir = "./tf_output/estimator/"
 output_graph_dir = "./tf_output/graph/"
 input_model_dir = "./tf_output/input_model/"
-
-optimizer='adam'
-learning_rate=1e-3
-learning_decay_rate=0.95
-learning_decay_steps=5000
 
 # load input_shape from file output by preprocess
 with open(data_folder + "/img_size.txt", "r") as f:
@@ -51,7 +46,8 @@ with open(data_folder + "/alphabet.txt", "r") as f:
 input_tensor = tf.placeholder(tf.float32, [None, input_shape[0], input_shape[1], 1])
 labels = tf.placeholder(tf.string, [None])
 
-out = deep_crnn(input_tensor, labels, input_shape, alphabet, batch_size)
+out = deep_crnn(input_tensor, labels, input_shape, alphabet, batch_size,
+                is_training = False)
 train_op, loss_ctc, CER, accuracy, prob, words = out
 
 
@@ -66,7 +62,7 @@ saver = tf.train.Saver()
 
 data = pd.DataFrame(columns=["tr_group", "oldnew", "pred", "epoch", "batch", # location information
                              "loss", "cer", "accuracy", "labels", "words", "filenames"])
-restore_model_nm = ""
+restore_model_nm = input_model_dir + "model.ckpt"
 
 run_epochs(saver = saver,
            restore_model_nm = restore_model_nm,

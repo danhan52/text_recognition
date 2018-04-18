@@ -108,7 +108,7 @@ def preprocess_bentham():
 
     #### Save training file
     export_df = data_df[["new_img_path", "transcription"]]
-    export_df.to_csv("../data/BenthamTest/test.csv", sep="\t", index=False)
+    export_df.to_csv("../data/BenthamTest/train.csv", sep="\t", index=False)
 
 
     #### Find freqency of letters

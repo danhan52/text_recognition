@@ -48,7 +48,10 @@ def deep_crnn(input_tensor, labels, input_shape, alphabet, batch_size,
     cnn_out = deep_cnn(input_tensor, is_training)
     cnn_out = reshape_cnn(cnn_out)
     n_hidden = [256, 256]
-    lstm_out =  bidirectional_lstm(cnn_out, n_hidden)
+    if is_training:
+        lstm_out = bidirectional_lstm(cnn_out, n_hidden)
+    else:
+        lstm_out = bidirectional_lstm(cnn_out, n_hidden, 1.0)
     prob = get_predictions(lstm_out, n_classes, n_hidden)
 
     # loss layers

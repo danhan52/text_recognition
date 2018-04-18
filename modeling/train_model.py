@@ -28,11 +28,6 @@ output_model_dir = "./tf_output/estimator/"
 output_graph_dir = "./tf_output/graph/"
 input_model_dir = ""# "./tf_output/input_model/"
 
-optimizer='adam'
-learning_rate=1e-3
-learning_decay_rate=0.95
-learning_decay_steps=5000
-
 # load input_shape from file output by preprocess
 with open(data_folder + "/img_size.txt", "r") as f:
     doc = f.readline()
@@ -89,6 +84,7 @@ run_epochs(saver = saver,
            data = data,
            output_model_dir = output_model_dir,
            oldnew = "new",
-           pred = "train")
+           pred = "train",
+           output_graph_dir = "")
 
 print("Optimization finished!")

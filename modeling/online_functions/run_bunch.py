@@ -50,7 +50,8 @@ def run_epochs(saver,
                data,
                output_model_dir,
                oldnew,
-               pred):
+               pred,
+               output_graph_dir=""):
     with tf.Session() as sess:
         sess.run(tf.global_variables_initializer())
         sess.run(tf.local_variables_initializer())
@@ -59,6 +60,8 @@ def run_epochs(saver,
         if restore_model_nm != "":
             saver.restore(sess, restore_model_nm)
         
+        if output_graph_dir != "":
+            writer = tf.summary.FileWriter(output_graph_dir, sess.graph)
         start_time = time.time()
         for i in range(n_epochs_per_bunch):
             sess.run(iterator.initializer)      
@@ -106,7 +109,9 @@ def run_epochs(saver,
                 data = data.append(newdata)
                 pickle.dump(data, open(output_model_dir+"online_metrics" + str(trg) + ".pkl", "wb"))
                 saver.save(sess, output_model_dir+"online_model" + str(trg) + ".ckpt")
-                #if not err: break
+                if not err and j > 2: break
             print('Avg Epoch time: {0} seconds'.format((time.time() - start_time)/(1.0*(i+1))))
+        if output_graph_dir != "":
+            writer.close()
     return data
 
