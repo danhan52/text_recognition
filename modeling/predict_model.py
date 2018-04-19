@@ -57,9 +57,13 @@ def run_predict_model(dataset = "BenthamTest", # iamHandwriting, BenthamDataset,
     # ** Train model **
     saver = tf.train.Saver()
 
-    data = pd.DataFrame(columns=["tr_group", "oldnew", "pred", "epoch", "batch", # location information
+    try:
+        data = pickle.load(open(input_model_dir + "metrics" + str(trg) + ".pkl", "rb"))
+        restore_model_nm = input_model_dir + "model" + str(trg) + ".ckpt"
+    except:
+        data = pd.DataFrame(columns=["tr_group", "oldnew", "pred", "epoch", "batch", # location information
                                  "loss", "cer", "accuracy", "labels", "words", "filenames", "time"])
-    restore_model_nm = input_model_dir + "model.ckpt"
+        restore_model_nm = input_model_dir + "model" + str(trg) + ".ckpt"
 
     run_epochs(saver = saver,
                restore_model_nm = restore_model_nm,
@@ -74,7 +78,7 @@ def run_predict_model(dataset = "BenthamTest", # iamHandwriting, BenthamDataset,
                words = words,
                input_tensor = input_tensor,
                labels = labels,
-               trg = trg,
+               trg = trg+1000,
                data = data,
                output_model_dir = output_model_dir,
                oldnew = "new",

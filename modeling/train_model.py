@@ -1,5 +1,6 @@
 # # Import libraries
 import os
+import sys
 import csv
 import time
 import pickle
@@ -56,8 +57,8 @@ def run_train_model(dataset = "iamHandwriting", # iamHandwriting, BenthamDataset
     saver = tf.train.Saver()
 
     if input_model_dir != "":
-        data = pickle.load(open(input_model_dir+"metrics.pkl", "rb"))
-        restore_model_nm = input_model_dir + "model.ckpt"
+        data = pickle.load(open(input_model_dir + "metrics" + str(trg+1000) + ".pkl", "rb"))
+        restore_model_nm = input_model_dir + "model" + str(trg+1000) + ".ckpt"
     else:
         data = pd.DataFrame(columns=["tr_group", "oldnew", "pred", "epoch", "batch", # location information
                                      "loss", "cer", "accuracy", "labels", "words", "filenames", "time"])
@@ -76,7 +77,7 @@ def run_train_model(dataset = "iamHandwriting", # iamHandwriting, BenthamDataset
                words = words,
                input_tensor = input_tensor,
                labels = labels,
-               trg = trg,
+               trg = trg+1000,
                data = data,
                output_model_dir = output_model_dir,
                oldnew = oldnew,

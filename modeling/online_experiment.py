@@ -25,7 +25,7 @@ dataset = "ASM"
 n_epochs_per_bunch = 1
 bunch_size = 1000
 batch_size = 16
-resize_to = 0.5
+resize_to = 1.0
 
 
 # ** Less important parameters **
