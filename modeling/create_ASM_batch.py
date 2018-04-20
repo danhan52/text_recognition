@@ -60,6 +60,7 @@ def create_ASM_batch(batch_start=0, batch_size=1000, resize_to=1.0, data_loc="..
     full_sv = os.getcwd().replace("\\", "/")
     full_sv = full_sv.replace("/online_functions", "")
     full_sv = full_sv.replace("/modeling", "")
+    full_sv = full_sv.replace("/results", "")
     full_sv = full_sv + "/data/ASM/Images/"
 
     print("Loading classification data")
