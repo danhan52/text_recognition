@@ -25,7 +25,7 @@ def run_epochs(saver,
                output_model_dir,
                oldnew,
                pred,
-               output_graph_dir=""):
+               pred_score):
     with tf.Session() as sess:
         sess.run(tf.global_variables_initializer())
         sess.run(tf.local_variables_initializer())
@@ -34,8 +34,6 @@ def run_epochs(saver,
         if restore_model_nm != "":
             saver.restore(sess, restore_model_nm)
         
-        if output_graph_dir != "":
-            writer = tf.summary.FileWriter(output_graph_dir, sess.graph)
         start_time = time.time()
         for i in range(n_epochs_per_bunch):
             sess.run(iterator.initializer)      
@@ -47,10 +45,10 @@ def run_epochs(saver,
 
                 try:
                     if train_op is not None: # do training
-                        _, cer, acc, loss, wordz = sess.run([train_op, CER, accuracy, loss_ctc, words],
+                        _, cer, acc, loss, wordz, pred_s = sess.run([train_op, CER, accuracy, loss_ctc, words, pred_score],
                                                             feed_dict={input_tensor: input_tensor_b, labels: labels_b})
                     else: # do prediction
-                        cer, acc, loss, wordz = sess.run([CER, accuracy, loss_ctc, words],
+                        cer, acc, loss, wordz, pred_s = sess.run([CER, accuracy, loss_ctc, words, pred_score],
                                                         feed_dict={input_tensor: input_tensor_b, labels: labels_b})
                     newdata = {"tr_group":trg,
                                "oldnew":oldnew,
@@ -62,9 +60,10 @@ def run_epochs(saver,
                                "accuracy":[[acc]],
                                "labels":[[labels_b]],
                                "words":[[wordz]],
+                               "pred_score":[[pred_s]],
                                "filenames":[[filenames_b]],
                                "time":time.time()-start_time}
-                    print('batch: {0}:{1}:{2}, loss: {3} \n\tCER: {4}, accuracy: {5}'.format(trg, i, j, loss, cer, acc))
+                    print('batch: {0}:{1}:{2}, loss: {3} \n\tCER: {4}, accuracy: {5}'.format(trg, i, j, loss, cer, acc), flush=True)
                 except:
                     newdata = {"tr_group":trg,
                                "oldnew":oldnew,
@@ -78,16 +77,14 @@ def run_epochs(saver,
                                "words":[[""]],
                                "filenames":[[filenames_b]],
                                "time":time.time()-start_time}
-                    print("Error at {0}:{1}:{2}".format(trg, i, j))
+                    print("Error at {0}:{1}:{2}".format(trg, i, j), flush=True)
                     err = True
                 # save data
                 newdata = pd.DataFrame.from_dict(newdata)
                 data = data.append(newdata)
                 pickle.dump(data, open(output_model_dir+"metrics" + str(trg) + ".pkl", "wb"))
                 saver.save(sess, output_model_dir+"model" + str(trg) + ".ckpt")
-                #if not err and j > 1: break
+                if not err and j > 1: break
             print('Avg Epoch time: {0} seconds'.format((time.time() - start_time)/(1.0*(i+1))))
-        if output_graph_dir != "":
-            writer.close()
     return data
 

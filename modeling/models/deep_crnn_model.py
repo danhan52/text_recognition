@@ -63,4 +63,4 @@ def deep_crnn(input_tensor, labels, input_shape, alphabet, batch_size,
     # optimizer
     train_op = create_optimizer(loss_ctc, lastlayer)
 
-    return train_op, loss_ctc, CER, accuracy, prob, words
+    return train_op, loss_ctc, CER, accuracy, prob, words, pred_score
