@@ -76,7 +76,7 @@ def run_model(pred_train = "train",
                                            "labels", "words", "pred_score", "filenames"])
         restore_model_nm = ""
     print(restore_model_nm)
-    print("Model prepped, now running")
+    print("Model prepped, now running " + pred_train)
     run_epochs(saver = saver,
                restore_model_nm = restore_model_nm,
                n_epochs_per_bunch = n_epochs,
