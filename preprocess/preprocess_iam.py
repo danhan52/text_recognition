@@ -81,15 +81,19 @@ def preprocess_iam_lines(resize_to=1.0, is_training=True, print_letters=False):
 
     #### Resize images (if requested)
     if resize_to != 1.0 or not is_training:
-        resize_dir = "Images_mod"
+        resize_dir = "Images_mod/"
         if not os.path.isdir(write_dir + resize_dir):
             os.mkdir(write_dir + resize_dir)
         count = 0
         onepercent = len(data_df)//100
         tenpercent = onepercent*10
         def replace_lines(fn):
-            m = re.sub("lines/[a-z]+[0-9]+/[a-z]+[0-9]+-[0-9a-z]+/(.*\.png)",
-                       resize_dir+"/\\1", fn)
+            if is_training:
+                m = re.sub("lines/[a-z]+[0-9]+/[a-z]+[0-9]+-[0-9a-z]+/(.*\.png)",
+                           resize_dir+"/\\1", fn)
+            else:
+                m = re.sub("iamHandwriting/lines/[a-z]+[0-9]+/[a-z]+[0-9]+-[0-9a-z]+/(.*\.png)",
+                           "iamTest/"+resize_dir+"/\\1", fn)
             m = m.replace("//", "/")
             return m
 
