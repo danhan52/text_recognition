@@ -26,7 +26,7 @@ def preprocess_bentham(resize_to = 1.0, is_training=True, print_letters=False):
     if not os.path.isdir(write_dir):
         os.mkdir(write_dir)
 
-    # get partitions (only use training for now)
+    # get partitions
     with open(os.path.join(part_dir, "TrainLines.lst")) as f:
         training = f.read().splitlines()
     with open(os.path.join(part_dir, "ValidationLines.lst")) as f:
@@ -108,7 +108,6 @@ def preprocess_bentham(resize_to = 1.0, is_training=True, print_letters=False):
     with open(write_dir + "alphabet.txt", "w") as f:
         f.write("".join(sorted([l[0] for l in letters])))
 
-    print("\n")
     if print_letters:
         print("Letter freqencies:\n", letters)
     else:
