@@ -100,7 +100,7 @@ def run_epochs(saver,
                 data_batch.to_csv(output_model_dir+"metrics_batch" + str(trg) + ".csv", index=False)
                 data_image.to_csv(output_model_dir+"metrics_image" + str(trg) + ".csv", index=False)
                 saver.save(sess, output_model_dir+"model" + str(trg) + ".ckpt")
-                #if not err and j > 0: break
+                if not err and j > 0: break
             print('Avg Epoch time: {0} seconds'.format((time.time() - start_time)/(1.0*(i+1))))
     return data_batch, data_image
 

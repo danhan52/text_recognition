@@ -38,15 +38,8 @@ def read_subjects_and_classifications(sv_fold):
     
     return subj, clas
 
-def get_transcription_lines(pts):
-    with open("../data/combined/img_size.txt", "r") as f:
-        doc = f.readline()
-        w, h = doc.split(",")
-        maxh = int(float(h))
+def get_transcription_lines(pts, maxh):
         
-    with open("../data/combined/alphabet.txt", "r") as f:
-        alphabet = f.readline()
-    
     data_mini = pd.DataFrame(columns=["transcription", "x1", "x2", "y1", "y2"])
 
     # get basic x and y information and make sure x is before y
@@ -164,6 +157,12 @@ def preprocess_ASM_csv(print_letters=False):
     onepercent = len(clas)//100
     tenpercent = onepercent*10
 
+
+    with open("../data/img_size.txt", "r") as f:
+        doc = f.readline()
+        w, h = doc.split(",")
+        maxh = int(float(h))
+
     for i in range(len(clas)):
         clas1 = clas.iloc[i]
         subj1 = subj[subj["subject_id"] == clas1["subject_ids"]]
@@ -174,7 +173,7 @@ def preprocess_ASM_csv(print_letters=False):
         for fr in frames:
             pts = [v for v in val if v["frame"] == fr]
             # get data frame of x and y information
-            data_mini = get_transcription_lines(pts)
+            data_mini = get_transcription_lines(pts, maxh)
             if data_mini is None:
                 continue
 

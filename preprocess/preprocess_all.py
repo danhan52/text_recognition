@@ -98,10 +98,10 @@ def get_alphabet(do_ASM=True):
 # run all preprocessing scripts
 def preprocess_all(resize_to = 1.0, do_ASM=True):
     preprocess_combine(resize_to)
+    get_img_sizes() # need to do this before ASM
     if do_ASM:
         preprocess_ASM_csv()
     
-    get_img_sizes()
     get_alphabet(do_ASM)
     
 if __name__ == "__main__":
