@@ -27,9 +27,10 @@ def remove_old_ckpt(b, output_model_dir):
         os.remove(mdl_base+".meta")
     except:
         pass
-    
+
     try:
-        os.remove(output_model_dir + "metrics" + b + ".pkl")
+        os.remove(output_model_dir + "metrics_batch" + b + ".csv")
+        os.remove(output_model_dir + "metrics_image" + b + ".csv")
     except:
         pass
     

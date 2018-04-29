@@ -21,7 +21,8 @@ def run_epochs(saver,
                input_tensor,
                labels,
                trg,
-               data,
+               data_batch,
+               data_image,
                output_model_dir,
                oldnew,
                pred,
@@ -50,7 +51,7 @@ def run_epochs(saver,
                     else: # do prediction
                         cer, acc, loss, wordz, pred_s = sess.run([CER, accuracy, loss_ctc, words, pred_score],
                                                         feed_dict={input_tensor: input_tensor_b, labels: labels_b})
-                    newdata = {"tr_group":trg,
+                    new_bat = {"tr_group":trg,
                                "oldnew":oldnew,
                                "pred":pred,
                                "epoch":i,
@@ -58,14 +59,20 @@ def run_epochs(saver,
                                "loss":loss,
                                "cer":cer,
                                "accuracy":[[acc]],
-                               "labels":[[labels_b]],
-                               "words":[[wordz]],
-                               "pred_score":[[pred_s]],
-                               "filenames":[[filenames_b]],
                                "time":time.time()-start_time}
-                    print('batch: {0}:{1}:{2}, loss: {3} \n\tCER: {4}, accuracy: {5}'.format(trg, i, j, loss, cer, acc), flush=True)
+                    new_img = {"tr_group":[trg for _ in range(len(labels_b))],
+                               "oldnew":[oldnew for _ in range(len(labels_b))],
+                               "pred":[pred for _ in range(len(labels_b))],
+                               "epoch":[i for _ in range(len(labels_b))],
+                               "batch":[j for _ in range(len(labels_b))],
+                               "labels":[str(ddd, "utf-8") for ddd in labels_b],
+                               "words":[str(ddd, "utf-8") for ddd in wordz],
+                               "pred_score":pred_s,
+                               "filenames":[str(ddd, "utf-8") for ddd in filenames_b]}
+                    tim = (time.time()-start_time)/(i*n_batches + j + 1)
+                    print('batch: {0}:{1}:{2}, time per batch: {5}\n\tloss: {3}, CER: {4}'.format(trg, i, j, loss, cer, tim), flush=True)
                 except:
-                    newdata = {"tr_group":trg,
+                    new_bat = {"tr_group":trg,
                                "oldnew":oldnew,
                                "pred":pred,
                                "epoch":i,
@@ -73,18 +80,27 @@ def run_epochs(saver,
                                "loss":-1,
                                "cer":-1,
                                "accuracy":[[-1, -1]],
-                               "labels":[[labels_b]],
-                               "words":[[""]],
-                               "filenames":[[filenames_b]],
                                "time":time.time()-start_time}
+                    new_img = {"tr_group":[trg for _ in range(len(labels_b))],
+                               "oldnew":[oldnew for _ in range(len(labels_b))],
+                               "pred":[pred for _ in range(len(labels_b))],
+                               "epoch":[i for _ in range(len(labels_b))],
+                               "batch":[j for _ in range(len(labels_b))],
+                               "labels":[str(ddd, "utf-8") for ddd in labels_b],
+                               "words":["" for _ in range(len(labels_b))],
+                               "pred_score":[-1 for _ in range(len(labels_b))],
+                               "filenames":[str(ddd, "utf-8") for ddd in filenames_b]}
                     print("Error at {0}:{1}:{2}".format(trg, i, j), flush=True)
                     err = True
                 # save data
-                newdata = pd.DataFrame.from_dict(newdata)
-                data = data.append(newdata)
-                pickle.dump(data, open(output_model_dir+"metrics" + str(trg) + ".pkl", "wb"))
+                new_bat = pd.DataFrame.from_dict(new_bat)
+                new_img = pd.DataFrame.from_dict(new_img)
+                data_batch = data_batch.append(new_bat)
+                data_image = data_image.append(new_img)
+                data_batch.to_csv(output_model_dir+"metrics_batch" + str(trg) + ".csv", index=False)
+                data_image.to_csv(output_model_dir+"metrics_image" + str(trg) + ".csv", index=False)
                 saver.save(sess, output_model_dir+"model" + str(trg) + ".ckpt")
-                if not err and j > 1: break
+                if not err and j > 0: break
             print('Avg Epoch time: {0} seconds'.format((time.time() - start_time)/(1.0*(i+1))))
-    return data
+    return data_batch, data_image
 

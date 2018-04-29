@@ -7,12 +7,8 @@ import sys
 
 from PIL import Image
 
-# for printing during for loops
-def my_print(text):
-    sys.stdout.write(str(text) + "\t")
-    sys.stdout.flush()
 
-def preprocess_bentham(resize_to = 1.0):
+def preprocess_bentham(resize_to = 1.0, is_training=True, print_letters=False):
     #### Read in data and modify data
     local_path = os.getcwd().replace("\\", "/")
     local_path = local_path.replace("preprocess", "")
@@ -20,6 +16,15 @@ def preprocess_bentham(resize_to = 1.0):
     trans_dir = "../data/BenthamDataset/Transcriptions/"
     part_dir = "../data/BenthamDataset/Partitions/"
 
+    # get directory to send all info to
+    write_dir = "../data/"
+    if is_training:
+        write_dir = write_dir + "BenthamDataset/"
+    else:
+        write_dir = write_dir + "BenthamTest/"
+        
+    if not os.path.isdir(write_dir):
+        os.mkdir(write_dir)
 
     # get partitions (only use training for now)
     with open(os.path.join(part_dir, "TrainLines.lst")) as f:
@@ -32,7 +37,10 @@ def preprocess_bentham(resize_to = 1.0):
 
     # filenames
     filenames = [f.replace(".txt", "") for f in os.listdir(trans_dir)]
-    filenames = [f for f in filenames if f in training]
+    if is_training:
+        filenames = [f for f in filenames if f in training]
+    else:
+        filenames = [f for f in filenames if f in validation or f in test]
     data_df = pd.DataFrame({"filenames": filenames})
     data_df["imgnames"] = [img_dir+f+".png" for f in data_df.filenames]
     data_df["transnames"] = [trans_dir+f+".txt" for f in data_df.filenames]
@@ -45,6 +53,8 @@ def preprocess_bentham(resize_to = 1.0):
         rep_val = max(np.median(im[:,:,0]), np.mean(im[:,:,0]))
         im[im[:,:,3] == 0] = [rep_val, rep_val, rep_val, 255]
         im = Image.fromarray(im).convert("L")
+        #### Resize images
+        im = im.resize([int(i) for i in np.floor(np.multiply(resize_to, im.size))])
         return im
     img_list = []
     count = 0
@@ -75,35 +85,41 @@ def preprocess_bentham(resize_to = 1.0):
     data_df["transcription"] = [readBenthamTrans(f) for f in data_df.transnames]
 
 
-    #### Get rid of unwanted rows
-    # get rid of the really big images
+    #### Get image sizes and remove big images
     w95 = np.percentile(data_df.widths, 95)
     h95 = np.percentile(data_df.heights, 95)
     data_df = data_df[np.logical_and(data_df.widths < w95, data_df.heights < h95)]
     print("Max image size (width, height): ({0}, {1})".format(w95, h95))
-    with open("../data/BenthamDataset/img_size.txt", "w") as f:
+    with open(write_dir + "img_size.txt", "w") as f:
         f.write(",".join([str(w95), str(h95)]))
 
-    # get rid of images with utf-8 special characters
+    #### Find freqency of letters and remove utf-8 special characters
     data_df["nonhex"] = [any([ord(i) > 127 for i in t]) 
                          for t in data_df.transcription]
     data_df = data_df[np.logical_not(data_df.nonhex)]
-    
-    
-    #### Resize images (if requested)
-    if resize_to != 1.0:
-        def resize_imgs(img):
-            img = img.resize([int(i) for i in np.floor(np.multiply(resize_to, img.size))])
-            return img
-        data_df["images"] = data_df["images"].apply(resize_imgs)
-        
-        print("\nResized max image size (width, height): ({0}, {1})".format(str(round(w95*resize_to)), str(round(h95*resize_to))))
-        with open("../data/iamHandwriting/img_size.txt", "w") as f:
-            f.write(",".join([str(round(w95*resize_to)), str(round(h95*resize_to))]))
+
+    letters = dict()
+    for tran in data_df.transcription:
+        for l in list(tran):
+            if l not in letters:
+                letters[l] = 0
+            letters[l] += 1
+    letters = sorted(letters.items(), key = lambda f: f[1], reverse=True)
+    with open(write_dir + "alphabet.txt", "w") as f:
+        f.write("".join(sorted([l[0] for l in letters])))
+
+    print("\n")
+    if print_letters:
+        print("Letter freqencies:\n", letters)
+    else:
+        print("Number of letters:", len(letters))
 
     
     #### Save new images
-    new_img_dir = local_path + "/data/BenthamDataset/Images_mod/"
+    if is_training:
+        new_img_dir = local_path + "/data/BenthamDataset/Images_mod/"
+    else:
+        new_img_dir = local_path + "/data/BenthamTest/Images_mod/"
     if not os.path.isdir(new_img_dir):
         os.mkdir(new_img_dir)
     data_df["new_img_path"] = [new_img_dir + f+".png" for f in data_df.filenames]
@@ -126,26 +142,16 @@ def preprocess_bentham(resize_to = 1.0):
 
     #### Save training file
     export_df = data_df[["new_img_path", "transcription"]]
-    export_df.to_csv("../data/BenthamDataset/train.csv", sep="\t", index=False)
-
-
-    #### Find freqency of letters
-    letters = dict()
-
-    for tran in export_df.transcription:
-        for l in list(tran):
-            if l not in letters:
-                letters[l] = 0
-            letters[l] += 1
-    letters = sorted(letters.items(), key = lambda f: f[1], reverse=True)
-    with open("../data/BenthamDataset/alphabet.txt", "w") as f:
-        f.write("".join(sorted([l[0] for l in letters])))
-
-    print("\n")
-    print("Letter freqencies:\n", letters)
+    export_df.to_csv(write_dir + "train.csv", sep="\t", index=False)
+    return export_df
 
 if __name__ == "__main__":
-    if len(sys.argv) >= 2:
+    if len(sys.argv) == 2:
         preprocess_bentham(float(sys.argv[1]))
+    elif len(sys.argv) == 3:
+        preprocess_bentham(float(sys.argv[1]), sys.argv[2]=="True")
+    elif len(sys.argv) == 4:
+        preprocess_bentham(float(sys.argv[1]), sys.argv[2]=="True", 
+                           sys.argv[3]=="True")
     else:
         preprocess_bentham()

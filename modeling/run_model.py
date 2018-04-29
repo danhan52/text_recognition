@@ -17,9 +17,10 @@ def run_model(pred_train = "train",
               batch_size = 16,
               randomize = True,
               trg = 0,
-              oldnew = "new",
               output_model_dir = "./tf_output/estimator/",
-              input_model_dir = ""):
+              oldnew = "new",
+              input_model_dir = "",
+              input_trg = "0"):
     is_training = pred_train == "train"
     csv_file = "../data/" + dataset + "/train.csv"
     
@@ -57,25 +58,22 @@ def run_model(pred_train = "train",
 
     # ** Train model **
     saver = tf.train.Saver()
-
-    
-    if is_training:
-        get_model = str(trg+1000)
-    else:
-        get_model = str(trg)
     
     if input_model_dir != "":
         try:
-            data = pickle.load(open(input_model_dir + "metrics" + get_model + ".pkl", "rb"))
+            data_batch = pd.read_csv(input_model_dir + "metrics_batch" + input_trg + ".csv")
+            data_image = pd.read_csv(input_model_dir + "metrics_image" + input_trg + ".csv")
         except:
-            data = pd.DataFrame(columns=["tr_group", "oldnew", "pred", "epoch", "batch", # location information
-                                         "loss", "cer", "accuracy", "labels", "words", "pred_score", 
-                                         "filenames", "time"])
-        restore_model_nm = input_model_dir + "model" + get_model + ".ckpt"
+            data_batch = pd.DataFrame(columns=["tr_group", "oldnew", "pred", "epoch", "batch", # location information
+                                               "loss", "cer", "accuracy", "time"])
+            data_image = pd.DataFrame(columns=["tr_group", "oldnew", "pred", "epoch", "batch", # location information
+                                               "labels", "words", "pred_score", "filenames"])
+        restore_model_nm = input_model_dir + "model" + input_trg + ".ckpt"
     else:
-        data = pd.DataFrame(columns=["tr_group", "oldnew", "pred", "epoch", "batch", # location information
-                                     "loss", "cer", "accuracy", "labels", "words", "pred_score", 
-                                     "filenames", "time"])
+        data_batch = pd.DataFrame(columns=["tr_group", "oldnew", "pred", "epoch", "batch", # location information
+                                           "loss", "cer", "accuracy", "time"])
+        data_image = pd.DataFrame(columns=["tr_group", "oldnew", "pred", "epoch", "batch", # location information
+                                           "labels", "words", "pred_score", "filenames"])
         restore_model_nm = ""
     print(restore_model_nm)
     print("Model prepped, now running")
@@ -92,11 +90,12 @@ def run_model(pred_train = "train",
                words = words,
                input_tensor = input_tensor,
                labels = labels,
-               trg = trg+1000,
-               data = data,
+               trg = trg,
+               data_batch = data_batch,
+               data_image = data_image,
                output_model_dir = output_model_dir,
                oldnew = oldnew,
-               pred = is_training,
+               pred = pred_train,
                pred_score = pred_score)
 
     print("Optimization finished!")
@@ -104,14 +103,15 @@ def run_model(pred_train = "train",
 
 if __name__ == "__main__":
     pred_train = "train"
-    dataset = "i"
+    dataset = "iamHandwriting"
     n_epochs = 5
-    batch_size = 10
+    batch_size = 16
     randomize = True
-    trg = 10
-    oldnew = "new"
+    trg = 0
     output_model_dir = "./tf_output/estimator/"
+    oldnew = "new"
     input_model_dir = ""
+    input_trg = "0"
     
     for i in range(len(sys.argv)):
         if i == 1:
@@ -127,21 +127,22 @@ if __name__ == "__main__":
         elif i == 6:
             trg = int(sys.argv[i])
         elif i == 7:
-            oldnew = sys.argv[i]
-        elif i == 8:
             output_model_dir = sys.argv[i]
+        elif i == 8:
+            oldnew = sys.argv[i]
         elif i == 9:
             input_model_dir = sys.argv[i]
-    
-    #print(pred_train, dataset, n_epochs, batch_size, randomize, output_model_dir, input_model_dir, trg, oldnew)
-    #sys.exit(0)
+        elif i == 10:
+            input_trg = sys.argv[i]
+        
     run_model(pred_train = pred_train,
-              dataset = dataset,
+              dataset = dataset, 
               n_epochs = n_epochs,
               batch_size = batch_size,
               randomize = randomize,
-              output_model_dir = output_model_dir,
-              input_model_dir = input_model_dir,
               trg = trg,
-              oldnew = oldnew)
+              output_model_dir = output_model_dir,
+              oldnew = oldnew,
+              input_model_dir = input_model_dir,
+              input_trg = input_trg)
     

@@ -124,8 +124,10 @@ def get_transcription_lines(pts):
     # get rid of lines that have transcripts that I don't like
     def bad_trans_fn(curpts):
         t = curpts["transcription"]
-        meta = "[unclear]" in t or "[underline]" in t or "[deletion]" in t
-        alpha = any([l not in alphabet for l in t])
+        un = "[unclear]" in t or "[underline]" in t
+        de = "[deletion]" in t or "[insertion]" in t
+        meta = un or de
+        alpha = any([ord(l) > 127 for l in t])
         return meta or alpha
     bad_trans = data_mini.apply(bad_trans_fn, axis=1)
 
@@ -138,7 +140,7 @@ def get_transcription_lines(pts):
         
     return data_mini
 
-def preprocess_ASM_csv():
+def preprocess_ASM_csv(print_letters=False):
     # Read in all classifications
     sv_fold = "../data/ASM/"
     if not os.path.isdir(sv_fold+"Images"):
@@ -204,14 +206,23 @@ def preprocess_ASM_csv():
     # create file for length of data
     with open("../data/ASM/data_size.txt", "w") as f:
         f.write(str(len(data)))
-    # create img size
-    with open("../data/combined/img_size.txt", "r") as f1:
-        with open("../data/ASM/img_size.txt", "w") as f2:
-            f2.write(f1.readline())
     # create alphabet
-    with open("../data/combined/alphabet.txt", "r") as f1:
-        with open("../data/ASM/alphabet.txt", "w") as f2:
-            f2.write(f1.readline())
+    letters = set()
+    for tran in data.transcription:
+        if type(tran) == str:
+            for l in list(tran):
+                letters.add(l)
+    letters = "".join(sorted(letters))
+    with open("../data/ASM/alphabet.txt", "w") as f:
+        f.write(letters)
+    print("\n")
+    if print_letters:
+        print("Letter freqencies:\n", letters)
+    else:
+        print("Number of letters:", len(letters))
 
 if __name__ == "__main__":
-    preprocess_ASM_csv()
+    if len(sys.argv) > 1:
+        preprocess_ASM_csv(sys.argv[1] == "True")
+    else:
+        preprocess_ASM_csv()
