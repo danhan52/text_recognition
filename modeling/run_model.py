@@ -44,7 +44,7 @@ def run_model(pred_train = "train",
     labels = tf.placeholder(tf.string, [None])
 
     out = deep_crnn(input_tensor, labels, input_shape, alphabet, batch_size,
-                    is_training=is_training)
+                    is_training=True)
     train_op, loss_ctc, CER, accuracy, prob, words, pred_score = out
     
     if not is_training:
