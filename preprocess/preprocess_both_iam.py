@@ -38,5 +38,5 @@ if __name__ == "__main__":
         preprocess_iam_lines(1.0, True)
         preprocess_iam_lines(1.0, False)
     get_img_sizes()
-    get_alphabet()
+    # get_alphabet()
 
