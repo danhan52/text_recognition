@@ -1,5 +1,5 @@
 # train model for one epoch
-python run_model.py train combined_train 10 16 True 0 $1 new
+python run_model.py train combined_train 1 16 True 0 $1 new
 # prediction
 python run_model.py pred combined_test 1 16 True 0 $1 new $1 0
 python end_batch.py 0
