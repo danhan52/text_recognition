@@ -32,7 +32,8 @@ def remove_old_ckpt(b, output_model_dir):
 if __name__ == "__main__":
     if len(sys.argv) >= 4:
         b = str(int(sys.argv[1]) - int(sys.argv[3]))
-        remove_old_ckpt(b=b, output_model_dir=sys.argv[2])
+        if b != 9
+            remove_old_ckpt(b=b, output_model_dir=sys.argv[2])
     print('Training Group {0} Finished!'.format(sys.argv[1]))
     print("********************************************************************************")
     print("********************************************************************************")
