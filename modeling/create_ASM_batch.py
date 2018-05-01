@@ -38,15 +38,15 @@ def create_ASM_batch(batch_end=1000, batch_size=1000, resize_to=1.0,
     full_sv = full_sv.replace("/results", "")
     full_sv = full_sv + "/data/ASM/Images/"
 
-    print("Loading classification data")
+    print("Loading classification data", flush=True)
     if os.path.exists(data_loc + "/ASM/full_train.csv"):
         data = pd.read_csv(data_loc + "/ASM/full_train.csv", sep="\t")
     else:
-        print("File doesn't exist, run \"preprocess_ASM_csv.py\" first")
+        print("File doesn't exist, run \"preprocess_ASM_csv.py\" first", flush=True)
 
     # Preprocess by splitting image into sections
     # load input_shape from file output by preprocess
-    with open(data_loc + "/combined/img_size.txt", "r") as f:
+    with open(data_loc + "/img_size.txt", "r") as f:
         doc = f.readline()
         w, h = doc.split(",")
         maxh = int(float(h))
@@ -63,7 +63,7 @@ def create_ASM_batch(batch_end=1000, batch_size=1000, resize_to=1.0,
     onepercent = len(curdata)//100
     tenpercent = onepercent*10
 
-    print("Creating image files and training csv")
+    print("Creating image files and training csv", flush=True)
     for i in range(len(curdata)):
         curclas = curdata.iloc[i].copy()
         loc = curclas["location"]
@@ -117,7 +117,7 @@ def create_ASM_batch(batch_end=1000, batch_size=1000, resize_to=1.0,
     savedata = pd.DataFrame.from_dict({"new_img_path":img_files, "transcription":train_lines})
     savedata = savedata[np.logical_not(savedata.duplicated())]
     savedata.to_csv(data_loc + "/ASM/train.csv", sep="\t", index=False)
-    print("\nTraining file and {0} images created".format(len(savedata)))
+    print("\nTraining file and {0} images created".format(len(savedata)), flush=True)
     return
 
 
@@ -143,6 +143,6 @@ if __name__ == "__main__":
                              rand_batch=rand_batch)
             redo = False
         except:
-            print("Error during batch creation, redoing")
+            print("Error during batch creation, redoing", flush=True)
             redo = True
             

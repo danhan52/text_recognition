@@ -38,7 +38,7 @@ def read_subjects_and_classifications(sv_fold):
     
     return subj, clas
 
-def get_transcription_lines(pts, maxh):
+def get_transcription_lines(pts, maxh, alphabet):
         
     data_mini = pd.DataFrame(columns=["transcription", "x1", "x2", "y1", "y2"])
 
@@ -115,14 +115,15 @@ def get_transcription_lines(pts, maxh):
     bad_ratio = [heights[i] > 0.9*widths[i] for i in range(len(widths))]
 
     # get rid of lines that have transcripts that I don't like
-    def bad_trans_fn(curpts):
+    def bad_trans_fn(curpts, alphabet):
         t = curpts["transcription"]
         un = "[unclear]" in t or "[underline]" in t
         de = "[deletion]" in t or "[insertion]" in t
         meta = un or de
         alpha = any([ord(l) > 127 for l in t])
-        return meta or alpha
-    bad_trans = data_mini.apply(bad_trans_fn, axis=1)
+        alpha2 = any([l not in alphabet for l in t])
+        return meta or alpha or alpha2
+    bad_trans = data_mini.apply(bad_trans_fn, alphabet=alphabet, axis=1)
 
     bad_lines = np.logical_or(np.logical_or(bad_width, bad_height),
                                np.logical_or(bad_ratio, bad_trans))
@@ -162,6 +163,8 @@ def preprocess_ASM_csv(print_letters=False):
         doc = f.readline()
         w, h = doc.split(",")
         maxh = int(float(h))
+    with open("../data/alphabet.txt", "r") as f:
+        alphabet = f.readline()
 
     for i in range(len(clas)):
         clas1 = clas.iloc[i]
@@ -173,7 +176,7 @@ def preprocess_ASM_csv(print_letters=False):
         for fr in frames:
             pts = [v for v in val if v["frame"] == fr]
             # get data frame of x and y information
-            data_mini = get_transcription_lines(pts, maxh)
+            data_mini = get_transcription_lines(pts, maxh, alphabet)
             if data_mini is None:
                 continue
 
