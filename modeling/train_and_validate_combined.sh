@@ -4,7 +4,7 @@ python run_model.py train combined_train 1 16 True 0 $1 new
 python run_model.py pred combined_test 1 16 True 0 $1 new $1 0
 python end_batch.py 0
 
-for i in {1..9..1}
+for i in {1..19..1}
   do
 	# train model for one epoch
 	python run_model.py train combined_train 1 16 True $i $1 new $1 $(($i-1))
