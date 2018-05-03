@@ -50,6 +50,7 @@ def create_ASM_batch(batch_end=1000, batch_size=1000, resize_to=1.0,
         doc = f.readline()
         w, h = doc.split(",")
         maxh = int(float(h))
+        maxw = int(float(w))
 
     # loop to get data
     if not rand_batch:
@@ -79,8 +80,13 @@ def create_ASM_batch(batch_end=1000, batch_size=1000, resize_to=1.0,
             ratio = maxh / float(img.size[1])
             wnew = int(float(img.size[0]) * float(ratio))
             img_line = img_line.resize((wnew, maxh), PIL.Image.ANTIALIAS)
+        if img_line.size[0] > maxw:
+            ratio = maxw / float(img.size[0])
+            hnew = int(float(img.size[1]) * float(ratio))
+            img_line = img_line.resize((hnew, maxw), PIL.Image.ANTIALIAS)
+
         
-        img_line = img_line.resize([int(j) for j in np.floor(np.multiply(resize_to, img_line.size))])
+        #img_line = img_line.resize([int(j) for j in np.floor(np.multiply(resize_to, img_line.size))])
         img_line_np = np.array(img_line)
 
         # turn everything above previous line white - slope top

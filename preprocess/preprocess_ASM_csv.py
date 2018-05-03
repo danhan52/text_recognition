@@ -120,9 +120,9 @@ def get_transcription_lines(pts, maxh, alphabet):
         un = "[unclear]" in t or "[underline]" in t
         de = "[deletion]" in t or "[insertion]" in t
         meta = un or de
-        alpha = any([ord(l) > 127 for l in t])
-        alpha2 = any([l not in alphabet for l in t])
-        return meta or alpha or alpha2
+        # alpha = any([ord(l) > 127 for l in t])
+        alpha = any([l not in alphabet for l in t])
+        return meta or alpha# or alpha2
     bad_trans = data_mini.apply(bad_trans_fn, alphabet=alphabet, axis=1)
 
     bad_lines = np.logical_or(np.logical_or(bad_width, bad_height),
