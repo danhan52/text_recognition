@@ -77,12 +77,12 @@ def create_ASM_batch(batch_end=1000, batch_size=1000, resize_to=1.0,
 
         # resize if it's too big
         if img_line.size[1] > maxh:
-            ratio = maxh / float(img.size[1])
-            wnew = int(float(img.size[0]) * float(ratio))
+            ratio = maxh / float(img_line.size[1])
+            wnew = int(float(img_line.size[0]) * float(ratio))
             img_line = img_line.resize((wnew, maxh), PIL.Image.ANTIALIAS)
         if img_line.size[0] > maxw:
-            ratio = maxw / float(img.size[0])
-            hnew = int(float(img.size[1]) * float(ratio))
+            ratio = maxw / float(img_line.size[0])
+            hnew = int(float(img_line.size[1]) * float(ratio))
             img_line = img_line.resize((hnew, maxw), PIL.Image.ANTIALIAS)
 
         
