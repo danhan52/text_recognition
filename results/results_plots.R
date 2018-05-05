@@ -1,6 +1,7 @@
 library(ggplot2)
 
-setwd("C:/Users/danny/Repos/text_recognition/results/")
+# setwd("C:/Users/danny/Repos/text_recognition/results/")
+setwd("/home/danny/Repos/text_recognition/results/")
 
 
 plot_batch <- function(type, trpr, batch, maxbatch=-1, size=25) {
@@ -135,7 +136,7 @@ dev.off()
 
 # online experiment results ####
 
-trpr="pred"; batch=12000; maxbatch=-1; size=25
+trpr="pred"; batch=22000; maxbatch=-1; size=25
 fn = paste0("/metrics_batch", batch, ".csv")
 size_ttl = ""
 divby = 1000
@@ -166,5 +167,6 @@ ggplot(cermean, aes(x=tr_group, y=cer)) +
   theme(title=element_text(size=16, face="bold"),
         axis.title=element_text(size=12),
         axis.text = element_text(size=10)) +
-  ylim(0, 1) +
-  scale_x_continuous(breaks=0:(max(cermean$tr_group)+0.5), minor_breaks=NULL)
+  # ylim(0, 1) +
+  scale_x_continuous(breaks=0:(max(cermean$tr_group)+0.5), minor_breaks=NULL) +
+  scale_y_log10(breaks=c(0.1, 0.2, 0.3, 0.4, 0.5, 0.6))#limits=c(0.1, 1))
