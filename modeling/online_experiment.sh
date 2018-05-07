@@ -1,8 +1,9 @@
-outfolder=./tf_output/online_training/
+outfolder=$1 #./tf_output/online_training/
+infolder=$2 #./tf_output/official_training/
 
 rm -r $outfolder
 mkdir -p $outfolder
-cp ./tf_output/official_training/* $outfolder
+cp $2* $outfolder
 
 # create asm batch
 python create_ASM_batch.py 1000 1000 0.5 ../data False

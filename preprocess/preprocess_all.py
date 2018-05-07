@@ -96,7 +96,7 @@ def get_alphabet(do_ASM=True):
         f.write("".join(sorted(letters)))
         
 # run all preprocessing scripts
-def preprocess_all(resize_to = 1.0, do_ASM=True):
+def preprocess_all(resize_to = 0.5, do_ASM=True):
     preprocess_combine(resize_to)
     get_img_sizes() # need to do this before ASM
     if do_ASM:

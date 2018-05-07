@@ -1,6 +1,8 @@
 data/*
 data_raw/*
 modeling/tf_output*
+results/data/*
+results/images/*
 old/*
 *.pyc
 *.pkl
@@ -9,4 +11,5 @@ old/*
 *.zip
 *.tar.gz
 *.tar.bz2
+.Rhistory
 .ipynb_checkpoints/
