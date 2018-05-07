@@ -1,7 +1,7 @@
 library(ggplot2)
 
-# setwd("C:/Users/danny/Repos/text_recognition/results/")
-setwd("/home/danny/Repos/text_recognition/results/")
+setwd("C:/Users/danny/Repos/text_recognition/results/")
+# setwd("/home/danny/Repos/text_recognition/results/")
 
 
 plot_batch <- function(type, trpr, batch, maxbatch=-1, size=25) {
@@ -35,6 +35,9 @@ plot_batch <- function(type, trpr, batch, maxbatch=-1, size=25) {
   # get epoch size to add unsmoothed data in background
   epoch_size = sum(data$tr_group == 0.5)
   x_full = (1:nrow(data))/epoch_size
+  
+  cer_final <- cermean[cermean$tr_group == max(cermean$tr_group),]
+  cat("Epoch", cer_final$tr_group, "mean:", cer_final$cer)
   
   ggplot(cermean, aes(x=tr_group, y=cer)) +
     geom_line(data=data, aes(x=x_full, y=cer), color="#CC79A7", size=0.5) +
@@ -79,36 +82,6 @@ svg("images/official_training/train.svg", width=4, height=4)
 plot_batch("official", "train", 9)
 dev.off()
 
-# trying out an official plot for online experiment ####
-batch = 41000; trpr = "pred"
-fn = paste0("/metrics_batch", batch, ".csv")
-size_ttl = ""
-xlabel = "Epoch"
-divby = 1000
-data_batch <- read.csv(paste0("data/online_training", fn))
-data_batch <- data_batch[data_batch$cer >0,]
-
-data <- data_batch[data_batch$pred == trpr,]
-data$tr_group <- data$tr_group/divby + 0.5
-cermean <- aggregate(cer ~ tr_group, data = data, FUN = mean)
-ttl <- ifelse(trpr == "train", "Training", "Validation")
-
-# get epoch size to add unsmoothed data in background
-epoch_size = sum(data$tr_group == 0.5)
-x_full = (1:nrow(data))/epoch_size
-
-ggplot(cermean, aes(x=tr_group, y=cer)) +
-  geom_line(data=data, aes(x=x_full, y=cer), color="#CC79A7", size=0.5) +
-  geom_line(size=1.0, color="#0072B2") +
-  geom_point(size=3.0, color="#0072B2") +
-  labs(x = xlabel, y = "Mean Character Error Rate",
-       title = paste(ttl, "CER", size_ttl)) +
-  theme(title=element_text(size=16, face="bold"),
-        axis.title=element_text(size=12),
-        axis.text = element_text(size=10)) +
-  ylim(0, 1) +
-  scale_x_continuous(breaks=0:(max(cermean$tr_group)+0.5), minor_breaks=NULL)
-
 
 # temporary plot for online experiment ####
 data <- read.csv("data/online_training/modified_pred.csv")
@@ -135,38 +108,46 @@ dev.off()
 
 
 # online experiment results ####
+plot_online <- function(trpr="train", batch=31000) {
 
-trpr="pred"; batch=22000; maxbatch=-1; size=25
-fn = paste0("/metrics_batch", batch, ".csv")
-size_ttl = ""
-divby = 1000
-data_batch <- read.csv(paste0("data/online_training", fn))
-xlabel = "Batch of 1000"
-# data_image <- read.csv(paste0("data/file_size/size", size, "/metrics_image5000.csv"))
-
-# do graphs for batch based calculations
-data <- data_batch[data_batch$pred == trpr,]
-if (maxbatch > 0) {
-  data <- data[data$tr_group <= maxbatch,]
+  fn = paste0("/metrics_batch", batch, ".csv")
+  size_ttl = ""
+  divby = 1000
+  data_batch <- read.csv(paste0("data/online_training", fn))
+  xlabel = "Batch of 1000"
+  # data_image <- read.csv(paste0("data/file_size/size", size, "/metrics_image5000.csv"))
+  
+  # do graphs for batch based calculations
+  data <- data_batch[data_batch$pred == trpr,]
+  data[data$cer < 0, "cer"] <- NA
+  # data <- data[data$cer > 0,]
+  data$tr_group <- data$tr_group/divby - 0.5
+  cermean <- aggregate(cer ~ tr_group, data = data, FUN = mean)
+  ttl <- ifelse(trpr == "train", "Training", "Validation")
+  
+  # get epoch size to add unsmoothed data in background
+  epoch_size = sum(data$tr_group == 0.5)
+  x_full = (1:nrow(data))/epoch_size
+  
+  cer_final <- cermean[cermean$tr_group == max(cermean$tr_group),]
+  cat("Epoch", cer_final$tr_group, "mean:", cer_final$cer)
+  
+  ggplot(cermean, aes(x=tr_group, y=cer)) +
+    geom_line(data=data, aes(x=x_full, y=cer), color="#CC79A7", size=0.5) +
+    geom_line(size=1.0, color="#0072B2") +
+    geom_point(size=3.0, color="#0072B2") +
+    labs(x = xlabel, y = "Mean Character Error Rate (log scale)",
+         title = paste(ttl, "CER", size_ttl)) +
+    theme(title=element_text(size=16, face="bold"),
+          axis.title=element_text(size=12),
+          axis.text = element_text(size=10)) +
+    scale_x_continuous(breaks=seq(0, max(cermean$tr_group)+0.5, by=2), minor_breaks=NULL) +
+    scale_y_log10(breaks=c(0.1, 0.2, 0.3, 0.4, 0.5, 0.6), limits=c(0.05, 0.7))
 }
-data <- data[data$cer > 0,]
-data$tr_group <- data$tr_group/divby - 0.5
-cermean <- aggregate(cer ~ tr_group, data = data, FUN = mean)
-ttl <- ifelse(trpr == "train", "Training", "Validation")
 
-# get epoch size to add unsmoothed data in background
-epoch_size = sum(data$tr_group == 0.5)
-x_full = (1:nrow(data))/epoch_size
-
-ggplot(cermean, aes(x=tr_group, y=cer)) +
-  geom_line(data=data, aes(x=x_full, y=cer), color="#CC79A7", size=0.5) +
-  geom_line(size=1.0, color="#0072B2") +
-  geom_point(size=3.0, color="#0072B2") +
-  labs(x = xlabel, y = "Mean Character Error Rate",
-       title = paste(ttl, "CER", size_ttl)) +
-  theme(title=element_text(size=16, face="bold"),
-        axis.title=element_text(size=12),
-        axis.text = element_text(size=10)) +
-  # ylim(0, 1) +
-  scale_x_continuous(breaks=0:(max(cermean$tr_group)+0.5), minor_breaks=NULL) +
-  scale_y_log10(breaks=c(0.1, 0.2, 0.3, 0.4, 0.5, 0.6))#limits=c(0.1, 1))
+svg("images/online_training/pred.svg", width=7, height=4)
+plot_online("pred", 43000)
+dev.off()
+svg("images/online_training/train.svg", width=7, height=4)
+plot_online("train", 43000)
+dev.off()
