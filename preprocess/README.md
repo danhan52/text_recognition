@@ -1,6 +1,6 @@
 ## Preprocessing for text recognition
 
-Each of the files in this folder except preprocess_all.py is meant to set up the data for ingestion into the text recognition model. I'll first describe how to use preprocess_all.py then go over the individual files for the different datasets. Finally, I'll describe the general output of the preprocessing functions in order to add more datasets as time goes on.
+Each of the files in this folder except preprocess_all.py sets up the data for a specific dataset for ingestion into the text recognition model. I'll first describe how to use preprocess_all.py then go over the individual files for the different datasets. Finally, I'll describe the general output of the preprocessing functions in order to add more datasets as time goes on.
 
 ### File descriptions
 
