@@ -146,8 +146,8 @@ plot_online <- function(trpr="train", batch=31000) {
 }
 
 svg("images/online_training/pred.svg", width=7, height=4)
-plot_online("pred", 43000)
+plot_online("pred", 63000)
 dev.off()
 svg("images/online_training/train.svg", width=7, height=4)
-plot_online("train", 43000)
+plot_online("train", 63000)
 dev.off()

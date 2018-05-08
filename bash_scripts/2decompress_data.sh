@@ -20,6 +20,6 @@ rm -r data_raw/benth_temp
 echo "Unzipping IAM handwriting data..."
 tar -xzf data_raw/iamHandwriting/ascii.tgz -C data/iamHandwriting/ascii
 tar -xzf data_raw/iamHandwriting/lines.tgz -C data/iamHandwriting/lines
-unzip -q data_raw/iamHandwriting/largeWriterIndependentTextLineRecognitionTask.zip -d data/Partitions
+unzip -q data_raw/iamHandwriting/largeWriterIndependentTextLineRecognitionTask.zip -d data/iamHandwriting/Partitions
 
 cd bash_scripts

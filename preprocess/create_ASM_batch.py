@@ -17,10 +17,10 @@ def readImg(url, grey=True):
     return img
 
 # create a batch with the next group of data from ASM
-def create_ASM_batch(batch_end=1000, batch_size=1000, resize_to=1.0, 
-                     data_loc="../data", rand_batch=False):
+def create_ASM_batch(batch_end=1000, batch_size=1000, resize_to=0.5, 
+                     rand_batch=False):
     # Read in all classifications
-    sv_fold = data_loc + "/ASM/"
+    sv_fold = "../data/ASM/"
     if not os.path.isdir(sv_fold+"Images"):
         os.mkdir(sv_fold+"Images")
     else:
@@ -39,14 +39,14 @@ def create_ASM_batch(batch_end=1000, batch_size=1000, resize_to=1.0,
     full_sv = full_sv + "/data/ASM/Images/"
 
     print("Loading classification data", flush=True)
-    if os.path.exists(data_loc + "/ASM/full_train.csv"):
-        data = pd.read_csv(data_loc + "/ASM/full_train.csv", sep="\t")
+    if os.path.exists("../data/ASM/full_train.csv"):
+        data = pd.read_csv("../data/ASM/full_train.csv", sep="\t")
     else:
         print("File doesn't exist, run \"preprocess_ASM_csv.py\" first", flush=True)
 
     # Preprocess by splitting image into sections
     # load input_shape from file output by preprocess
-    with open(data_loc + "/img_size.txt", "r") as f:
+    with open("../data/img_size.txt", "r") as f:
         doc = f.readline()
         w, h = doc.split(",")
         maxh = int(float(h))
@@ -122,7 +122,7 @@ def create_ASM_batch(batch_end=1000, batch_size=1000, resize_to=1.0,
     # end of loop
     savedata = pd.DataFrame.from_dict({"new_img_path":img_files, "transcription":train_lines})
     savedata = savedata[np.logical_not(savedata.duplicated())]
-    savedata.to_csv(data_loc + "/ASM/train.csv", sep="\t", index=False)
+    savedata.to_csv("../data/ASM/train.csv", sep="\t", index=False)
     print("\nTraining file and {0} images created".format(len(savedata)), flush=True)
     return
 
@@ -131,22 +131,19 @@ if __name__ == "__main__":
     batch_end=1000
     batch_size=1000
     resize_to=1.0
-    data_loc="../data"
     rand_batch=False
 
-    if len(sys.argv) >= 6:
+    if len(sys.argv) >= 5:
         batch_end=int(sys.argv[1])
         batch_size=int(sys.argv[2])
         resize_to=float(sys.argv[3])
-        data_loc=sys.argv[4]
-        rand_batch=sys.argv[5] == "True"
+        rand_batch=sys.argv[4] == "True"
 
     redo = True
     while redo:
         try:
             create_ASM_batch(batch_end=batch_end, batch_size=batch_size, 
-                             resize_to=resize_to, data_loc=data_loc,
-                             rand_batch=rand_batch)
+                             resize_to=resize_to, rand_batch=rand_batch)
             redo = False
         except:
             print("Error during batch creation, redoing", flush=True)

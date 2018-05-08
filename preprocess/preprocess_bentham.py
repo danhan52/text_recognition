@@ -8,7 +8,7 @@ import sys
 from PIL import Image
 
 
-def preprocess_bentham(resize_to = 1.0, is_training=True, print_letters=False):
+def preprocess_bentham(is_training=True, resize_to=0.5, print_letters=False):
     #### Read in data and modify data
     local_path = os.getcwd().replace("\\", "/")
     local_path = local_path.replace("preprocess", "")
@@ -144,13 +144,28 @@ def preprocess_bentham(resize_to = 1.0, is_training=True, print_letters=False):
     export_df.to_csv(write_dir + "train.csv", sep="\t", index=False)
     return export_df
 
+
 if __name__ == "__main__":
-    if len(sys.argv) == 2:
-        preprocess_bentham(float(sys.argv[1]))
-    elif len(sys.argv) == 3:
-        preprocess_bentham(float(sys.argv[1]), sys.argv[2]=="True")
-    elif len(sys.argv) == 4:
-        preprocess_bentham(float(sys.argv[1]), sys.argv[2]=="True", 
-                           sys.argv[3]=="True")
+    if len(sys.argv >= 3):
+        resize_to = float(sys.argv[2])
     else:
-        preprocess_bentham()
+        resize_to = 0.5
+
+    if len(sys.argv >= 4):
+        print_letters = sys.argv[3] == "True"
+    else:
+        print_letters = False
+
+    if len(sys.argv) >= 2:
+        if sys.argv[1] == "train":
+            preprocess_bentham(True, resize_to, print_letters)
+        elif sys.argv[1] == "test":
+            preprocess_bentham(False, resize_to, print_letters)
+        elif sys.argv[1] == "both":
+            preprocess_bentham(True, resize_to, print_letters)
+            preprocess_bentham(False, resize_to, print_letters)
+        else:
+            print("First argument must be one of 'train', 'test', or 'both'")
+    else:
+        preprocess_bentham(True)
+        preprocess_bentham(False)
