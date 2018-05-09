@@ -108,7 +108,7 @@ dev.off()
 
 
 # online experiment results ####
-plot_online <- function(trpr="train", batch=31000) {
+plot_online <- function(trpr="train", batch=1000) {
 
   fn = paste0("/metrics_batch", batch, ".csv")
   size_ttl = ""
@@ -141,13 +141,13 @@ plot_online <- function(trpr="train", batch=31000) {
     theme(title=element_text(size=16, face="bold"),
           axis.title=element_text(size=12),
           axis.text = element_text(size=10)) +
-    scale_x_continuous(breaks=seq(0, max(cermean$tr_group)+0.5, by=2), minor_breaks=NULL) +
+    scale_x_continuous(breaks=seq(0, max(cermean$tr_group)+0.5, by=4), minor_breaks=NULL) +
     scale_y_log10(breaks=c(0.1, 0.2, 0.3, 0.4, 0.5, 0.6), limits=c(0.05, 0.7))
 }
 
 svg("images/online_training/pred.svg", width=7, height=4)
-plot_online("pred", 63000)
+plot_online("pred", 89000)
 dev.off()
 svg("images/online_training/train.svg", width=7, height=4)
-plot_online("train", 63000)
+plot_online("train", 89000)
 dev.off()

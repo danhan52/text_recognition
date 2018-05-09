@@ -35,7 +35,7 @@ def preprocess_bentham(is_training=True, resize_to=0.5, print_letters=False):
         test = f.read().splitlines()
 
 
-    # filenames
+    # get filenames of images and transcriptions
     filenames = [f.replace(".txt", "") for f in os.listdir(trans_dir)]
     if is_training:
         filenames = [f for f in filenames if f in training]
@@ -46,7 +46,8 @@ def preprocess_bentham(is_training=True, resize_to=0.5, print_letters=False):
     data_df["transnames"] = [trans_dir+f+".txt" for f in data_df.filenames]
 
 
-    # images
+    # read images, remove the alpha layer (turn to white), convert to greyscale,
+    # and resize, if needed
     print("Reading image files...")
     def readBenthamImg(fn):
         im = np.array(Image.open(fn))
@@ -73,19 +74,19 @@ def preprocess_bentham(is_training=True, resize_to=0.5, print_letters=False):
     print()
     print(str(count) + " images read")
 
-
+    # get sizes of images
     data_df["imsizes"] = [np.array(i).shape for i in data_df.images]
     data_df["heights"] = [i[0] for i in data_df.imsizes]
     data_df["widths"] = [i[1] for i in data_df.imsizes]
 
 
-    # transcriptions
+    # read all transcriptions
     def readBenthamTrans(fn):
         return open(fn, "r").readline().replace("\n", "")
     data_df["transcription"] = [readBenthamTrans(f) for f in data_df.transnames]
 
 
-    #### Get image sizes and remove big images
+    #### Get image sizes and remove images above the 95th percentile - they're just too big
     w95 = np.percentile(data_df.widths, 95)
     h95 = np.percentile(data_df.heights, 95)
     data_df = data_df[np.logical_and(data_df.widths < w95, data_df.heights < h95)]

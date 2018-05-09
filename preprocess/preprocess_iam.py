@@ -6,10 +6,7 @@ import re
 from PIL import Image
 
 def preprocess_iam_lines(is_training=True, resize_to=0.5, print_letters=False):
-    #### Read in data
-    data_list = []
-    part_dir = "../data/iamHandwriting/Partitions/"
-
+    
     # get directory to send all info to
     write_dir = "../data/"
     if is_training:
@@ -20,6 +17,9 @@ def preprocess_iam_lines(is_training=True, resize_to=0.5, print_letters=False):
     if not os.path.isdir(write_dir):
         os.mkdir(write_dir)
 
+    #### Read in data
+    data_list = []
+    part_dir = "../data/iamHandwriting/Partitions/"
     with open("../data/iamHandwriting/ascii/lines.txt") as f:
         for line in f:
             if line[0] == "#":
@@ -60,7 +60,7 @@ def preprocess_iam_lines(is_training=True, resize_to=0.5, print_letters=False):
         data_df = data_df[[l in test for l in data_df["lineID"]]]
 
     #### Add new columns
-    # location columns
+    # location of images columns
     data_df["prefix"] = [x.split("-")[0] for x in data_df["lineID"]]
     data_df["form"] = ["-".join([x.split("-")[0], x.split("-")[1]])
                                 for x in data_df["lineID"]]
@@ -69,14 +69,12 @@ def preprocess_iam_lines(is_training=True, resize_to=0.5, print_letters=False):
     data_df["path"] = local_path + data_df["prefix"] + "/" + data_df["form"] + "/" + data_df["lineID"] + ".png"
 
 
-    #### Get rid of unwanted rows
+    #### Get image sizes and remove images above the 95th percentile - they're just too big
     w95 = np.percentile(data_df.w_bound, 95)
     h95 = np.percentile(data_df.h_bound, 95)
     print("Max image size (width, height): ({0}, {1})".format(w95, h95))
     with open(write_dir + "img_size.txt", "w") as f:
         f.write(",".join([str(w95), str(h95)]))
-
-    # get rid of the really big images
     data_df = data_df[np.logical_and(data_df.w_bound < w95, data_df.h_bound < h95)]
 
     #### Resize images (if requested)
@@ -87,12 +85,13 @@ def preprocess_iam_lines(is_training=True, resize_to=0.5, print_letters=False):
         count = 0
         onepercent = len(data_df)//100
         tenpercent = onepercent*10
+        # get the new filename based on the old one
         def replace_lines(fn):
             if is_training:
-                m = re.sub("lines/[a-z]+[0-9]+/[a-z]+[0-9]+-[0-9a-z]+/(.*\.png)",
+                m = re.sub("lines/[a-z]+[0-9]+/[a-z]+[0-9]+-[0-9a-z]+/(.*\\.png)",
                            resize_dir+"/\\1", fn)
             else:
-                m = re.sub("iamHandwriting/lines/[a-z]+[0-9]+/[a-z]+[0-9]+-[0-9a-z]+/(.*\.png)",
+                m = re.sub("iamHandwriting/lines/[a-z]+[0-9]+/[a-z]+[0-9]+-[0-9a-z]+/(.*\\.png)",
                            "iamTest/"+resize_dir+"/\\1", fn)
             m = m.replace("//", "/")
             return m
@@ -115,7 +114,7 @@ def preprocess_iam_lines(is_training=True, resize_to=0.5, print_letters=False):
         with open(write_dir + "img_size.txt", "w") as f:
             f.write(",".join([str(round(w95*resize_to)), str(round(h95*resize_to))]))
 
-    #### Save all lines
+    #### Save training file
     data_df["new_img_path"] = data_df["path"]
     data_df = data_df[["new_img_path", "transcription"]]
     data_df.to_csv(write_dir + "train.csv", sep="\t", index=False)

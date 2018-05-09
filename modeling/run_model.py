@@ -12,7 +12,7 @@ from models.model_builders.create_dataset import *
 
 
 def run_model(pred_train = "train",
-              dataset = "iamHandwriting", # iamHandwriting, BenthamDataset, or combined
+              dataset = "iamHandwriting",
               n_epochs = 5,
               batch_size = 16,
               randomize = True,
@@ -47,6 +47,7 @@ def run_model(pred_train = "train",
                     is_training=True)
     train_op, loss_ctc, CER, accuracy, prob, words, pred_score = out
     
+    # want train_op = None for prediction to work
     if not is_training:
         train_op = None
 
@@ -59,6 +60,7 @@ def run_model(pred_train = "train",
     # ** Train model **
     saver = tf.train.Saver()
     
+    # try to load the old data or create new data frame and create restore model name
     if input_model_dir != "":
         try:
             data_batch = pd.read_csv(input_model_dir + "metrics_batch" + input_trg + ".csv")
