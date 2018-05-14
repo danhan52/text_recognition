@@ -4,19 +4,8 @@ import matplotlib.pyplot as plt
 from skimage import filters as skimfilt
 from scipy.ndimage import label as sci_lab
 
-# project the image onto a specific direction
-def project(img, direction):
-    if direction == "x":
-        proj = np.sum(img, 0)
-    elif direction == "y":
-        proj = np.sum(img, 1)
-    else:
-        print("Direction must be one of 'x' or 'y'")
-        proj = []
-    return proj
-
 # binarize an image
-def binarizeImg(img, threshFn = None, biThresh = None, greater = True, plotIt = False):
+def binarizeImg(img, threshFn = None, biThresh = None, greater = True):
     if threshFn is not None:
         biThresh = threshFn(img)
     elif biThresh is None:
@@ -26,21 +15,15 @@ def binarizeImg(img, threshFn = None, biThresh = None, greater = True, plotIt = 
     else:
         imgCp = img < biThresh
     
-    if plotIt:
-        plt.imshow(imgCp, cmap = "gray")
-        plt.show()
     return imgCp, biThresh
 
 # smooth an image
-def smoothImg(img, sigma, plotIt = False):
+def smoothImg(img, sigma):
     imgCp = skimfilt.gaussian(img, sigma=sigma, multichannel=False)
-    if plotIt:
-        plt.imshow(imgCp, cmap = "gray")
-        plt.show()
     return imgCp
 
 # remove the edges from an image
-def removeEdges(grey, let, pageBlur, plotit = False):
+def removeEdges(grey, let, pageBlur):
     level1Mask = binarizeImg(grey, skimfilt.threshold_triangle, greater=False)[0]
     blurredLevel1Mask = smoothImg(level1Mask, sigma=pageBlur)
 
@@ -68,19 +51,5 @@ def removeEdges(grey, let, pageBlur, plotit = False):
     greyTrimmed = grey[level2TrimMask].reshape(x_count, y_count)
     letTrimmed = let[level2TrimMask].reshape(x_count, y_count, 3)
     
-    if plotit:
-        # plot level 1
-        subjectFigure, subjectAxes = plt.subplots(figsize=(30, 20),
-                                                      ncols=2, nrows=1)
-        subjectAxes.flatten()[0].imshow(level1Mask, cmap = 'gray')
-        subjectAxes.flatten()[1].imshow(blurredLevel1Mask, cmap = 'gray')
-        plt.show()
-
-        # plot level 2
-        subjectFigure, subjectAxes = plt.subplots(figsize=(30, 20), ncols=3, nrows=2)
-        subjectAxes.flatten()[0].imshow(level2Mask, cmap = 'gray')
-        subjectAxes.flatten()[1].imshow(level2TrimMask, cmap = 'gray')
-        subjectAxes.flatten()[2].imshow(greyTrimmed, cmap = 'gray')
-        plt.show()
         
     return greyTrimmed, letTrimmed, level2TrimOffsets
