@@ -54,7 +54,7 @@ def run_model(pred_train = "train",
     # ** Load dataset **
     out = create_iterator(csv_file, input_shape, batch_size, randomize)
     dataset, iterator, next_batch, datasize = out
-    n_batches = int(datasize / batch_size)
+    n_batches = int(np.ceil(datasize / batch_size))
 
 
     # ** Train model **
@@ -79,29 +79,29 @@ def run_model(pred_train = "train",
         restore_model_nm = ""
     print(restore_model_nm)
     print("Model prepped, now running " + pred_train)
-    run_epochs(saver = saver,
-               restore_model_nm = restore_model_nm,
-               n_epochs_per_bunch = n_epochs,
-               iterator = iterator,
-               n_batches = n_batches,
-               next_batch = next_batch,
-               train_op = train_op,
-               CER = CER,
-               accuracy = accuracy,
-               loss_ctc = loss_ctc,
-               words = words,
-               input_tensor = input_tensor,
-               labels = labels,
-               trg = trg,
-               data_batch = data_batch,
-               data_image = data_image,
-               output_model_dir = output_model_dir,
-               oldnew = oldnew,
-               pred = pred_train,
-               pred_score = pred_score)
+    db, di = run_epochs(saver = saver,
+                        restore_model_nm = restore_model_nm,
+                        n_epochs_per_bunch = n_epochs,
+                        iterator = iterator,
+                        n_batches = n_batches,
+                        next_batch = next_batch,
+                        train_op = train_op,
+                        CER = CER,
+                        accuracy = accuracy,
+                        loss_ctc = loss_ctc,
+                        words = words,
+                        input_tensor = input_tensor,
+                        labels = labels,
+                        trg = trg,
+                        data_batch = data_batch,
+                        data_image = data_image,
+                        output_model_dir = output_model_dir,
+                        oldnew = oldnew,
+                        pred = pred_train,
+                        pred_score = pred_score)
 
     print("Optimization finished!")
-    return
+    return db, di
 
 if __name__ == "__main__":
     pred_train = "train"
